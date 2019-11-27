@@ -46,44 +46,40 @@ void RadialPlate::calculate()
         }
     }
 
+    // Update non-center points on the perimeter
+    int l = numRadialPoints - 1;
+
+    for (int m = 0; m < numAngularPoints; m++)
     {
-        // Update non-center points on the perimeter
-        int l = numRadialPoints - 1;
+        float Δu = u.laplacePerimeter(m);
 
-        for (int m = 0; m < numAngularPoints; m++)
-        {
-            float Δu = u.laplacePerimeter(m);
+        float dtΔu = Δu - Δup(l, m);
+        Δup(l, m) = Δu;
 
-            float dtΔu = Δu - Δup(l, m);
-            Δup(l, m) = Δu;
-
-            ut(l, m) = c1 * (
-                sqr(k) * sqr(waveSpeed) * Δu
-                + σ₀ * k * up(l, m)
-                + 2 * σ₁ * k * dtΔu
-                + 2 * u(l, m)
-                - up(l, m)
-                + sqr(k) * f(l, m));
-        }
-    }
-    
-    // Update center point
-    {
-        float Δou = u.laplaceCenter();
-        float dtΔou = Δou - Δup(0, 0);
-        Δup(0, 0) = Δou;
-
-        int l = 0;
-        int m = 0;
-
-        ut(0, 0) = c1 * (
-            sqr(k) * sqr(waveSpeed) * Δou
+        ut(l, m) = c1 * (
+            sqr(k) * sqr(waveSpeed) * Δu
             + σ₀ * k * up(l, m)
-            + 2 * σ₁ * k * dtΔou
+            + 2 * σ₁ * k * dtΔu
             + 2 * u(l, m)
             - up(l, m)
             + sqr(k) * f(l, m));
     }
+    
+    // Update center point
+    float Δou = u.laplaceCenter();
+    float dtΔou = Δou - Δup(0, 0);
+    Δup(0, 0) = Δou;
+
+    l = 0;
+    int m = 0;
+
+    ut(0, 0) = c1 * (
+        sqr(k) * sqr(waveSpeed) * Δou
+        + σ₀ * k * up(l, m)
+        + 2 * σ₁ * k * dtΔou
+        + 2 * u(l, m)
+        - up(l, m)
+        + sqr(k) * f(l, m));
 
     // Finalize transactions.
     RadialDomain &swap = up;

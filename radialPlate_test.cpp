@@ -7,14 +7,14 @@
 
 int main(int argc, char **argv)
 {
-    RadialPlate plate(9, 27, 44100.0);
+    RadialPlate<6, 18> plate(44100.0);
 
     float max = 0;
 
     Realtime rt = quickAudio([&](int n, float x)
     {
         plate.calculate();
-        float y = 20e3 * plate.get(3, 0);
+        float y = 2e3 * plate.get(3, 0);
 
         if (fabs(y) > 1.0)
         {
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
         if (ImGui::Button("Strike"))
         {
             printf("Striking plate\n");
-            plate.addForce(5, 0, 500);
+            plate.addForce(0, 0, 5000);
         }
 
         ImGui::End();
