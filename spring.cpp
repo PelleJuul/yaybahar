@@ -56,5 +56,5 @@ void Spring::drawGui()
     ImGui::SliderFloat("Stiffness", &kappa, 0, 50.0);
     ImGui::SliderFloat("Independet dampening", &s0, 0, 10);
     ImGui::SliderFloat("Dependent dampening", &s1, 0, 10e-3);
-    ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
+    // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
 };

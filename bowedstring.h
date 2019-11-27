@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "LineDomain.h"
 
 struct BowedString
 {
@@ -15,7 +16,7 @@ struct BowedString
     // Bow parameters
     float Fb = 1000;
     float vb = 0.2;
-    float a = 100;
+    float a = 50;
 
     // Derived parameters
     float h;
@@ -24,9 +25,12 @@ struct BowedString
     float c2;
 
     // State variables
-    std::vector<float> u;
-    std::vector<float> up;
-    std::vector<float> un;
+    LineDomain ua;
+    LineDomain ub;
+    LineDomain uc;
+    LineDomain &u;
+    LineDomain &un;
+    LineDomain &up;
     float vrel;
 
     BowedString(int L, float fs);

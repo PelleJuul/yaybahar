@@ -4,9 +4,12 @@
 #include <pal.h>
 
 BowedString::BowedString(int L, float fs) :
-    u(L, 0),
-    up(L, 0),
-    un(L, 0)
+    ua(L),
+    ub(L),
+    uc(L),
+    u(ua),
+    un(ub),
+    up(uc)
 {
     this->fs = fs;
     this->L = L;
@@ -30,8 +33,8 @@ inline float thetad(float a, float eta)
 }
 
 inline float update(
-    const std::vector<float> &u,
-    const std::vector<float> &up,
+    LineDomain &u,
+    LineDomain &up,
     int l,
     float vrel,
     float Fb,
@@ -42,49 +45,53 @@ inline float update(
     float sigma0)
 {
     return (
-          pow2(k) * pow2(wavespeed) * dxx(rh, u, l)
+          pow2(k) * pow2(wavespeed) * u.dxx(l)
         - pow2(k) * Fb * theta(a, vrel)
-        + sigma0 * k * up[l]
-        + 2 * u[l]
-        - up[l]);
+        + sigma0 * k * up.at(l)
+        + 2 * u.at(l)
+        - up.at(l));
 }
 
 float BowedString::getNextSample()
 {
-    for (int l = 0; l < L; l++)
+    // Compute bowing point
+    int lb = round(L * 0.2);
+
+    // Update up to bowing point
+
+    for (int l = 0; l < lb; l++)
     {
-        float Fbl = 0;
+        un.at(l) = c1 * update(u, up, l, 0, 0, k, L, wavespeed, a, sigma0);
+    }
+ 
+    for (int i = 0; i < 100; i++)
+    {
+        float f = c2 * c1 * update(u, up, lb, vrel, Fb, k, L, wavespeed, a, sigma0) - c2 * up.at(lb) - vb - vrel;
+        float fd = c2 * pow2(k) * Fb * thetad(a, vrel) - 1;
+        float vreln = vrel - (f / fd);
 
-        if (l == round(L * 0.2))
+        if (fabs(vreln - vrel) < 10e-4)
         {
-            Fbl = Fb;
-
-            for (int i = 0; i < 100; i++)
-            {
-                float f = c2 * c1 * update(u, up, l, vrel, Fbl, k, L, wavespeed, a, sigma0) - c2 * up[l] - vb - vrel;
-                float fd = c2 * pow2(k) * Fbl * thetad(a, vrel) - 1;
-                float vreln = vrel - (f / fd);
-
-                if (fabs(vreln - vrel) < 10e-4)
-                {
-                    vrel = vreln;
-                    break;
-                }
-
-                vrel = vreln;
-            }
+            vrel = vreln;
+            break;
         }
 
-        un[l] = c1 * update(u, up, l, vrel, Fbl, k, L, wavespeed, a, sigma0);
+        vrel = vreln;
     }
 
-    for (int l = 0; l < L; l++)
+    un.at(lb) = c1 * update(u, up, lb, vrel, Fb, k, L, wavespeed, a, sigma0);
+
+    for (int l = lb+1; l < L; l++)
     {
-        up[l] = u[l];
-        u[l] = un[l];
+        un.at(l) = c1 * update(u, up, l, 0, 0, k, L, wavespeed, a, sigma0);
     }
 
-    return u[round(L * 0.8)];
+    LineDomain &uswap = un;
+    up = u;
+    u = un;
+    un = uswap;
+
+    return u.at(round(L * 0.8));
 }
 
 void BowedString::drawGui()
@@ -94,6 +101,6 @@ void BowedString::drawGui()
     ImGui::SliderFloat("bow force", &Fb, 0, 5000);
     ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
     ImGui::SliderFloat("bow characteristic", &a, 0, 1000);
-    ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
+    // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
     ImGui::End();
 }
