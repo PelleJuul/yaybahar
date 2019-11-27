@@ -18,8 +18,8 @@ int main(int argc, char **argv)
     Gain plate1Gain("Plate 1");
 
     BowedString bowedString(55, fs);
-    Spring spring1(200, fs);
-    Spring spring2(200, fs);
+    Spring spring1(150, fs);
+    Spring spring2(150, fs);
     Waveguide wg(ceil(fs * (1.0 / 220.0)) + 1);
 
     RadialPlate<4, 12> plate1(44100);
@@ -42,22 +42,36 @@ int main(int argc, char **argv)
         {
             float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
             float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
+            float f11 = c11.calculateForce(
+                spring1.at(spring1.size() - 4),
+                plate1.get(0, 0)
+            );
 
             bowedString.addForce(10, f1);
             bowedString.addForce(10, f2);
+
             spring1.addForce(0, -f1);
+            spring1.addForce(spring1.size() - 4, f11);
+
             spring2.addForce(0, -f2);
+
+            plate1.addForce(0, 0, -f11);
 
             float b = bowedString.getNextSample();
             float s1 = spring1.computeNextSample(0);
             float s2 = spring2.computeNextSample(0);
 
+            plate1.calculate();
+
             float ab = powf(10, stringAmp / 10);
             float as1 = powf(10, springAmp1 / 10);
             float as2 = powf(10, springAmp2 / 10);
             float a = powf(10, amp / 10);
-    
-            float y = a * 1e3 * (ab * b + as1 * s1 + as2 * s2);
+            float p1 = plate1Gain * plate1.get(2, 0);
+
+            // printf("%f\n", p1);
+
+            float y = a * 1e3 * (ab * b + as1 * s1 + as2 * s2 + p1);
             out[i * c] = y;
             out[i * c + 1] = y;
         }
@@ -81,8 +95,13 @@ int main(int argc, char **argv)
         ImGui::SliderFloat("String", &stringAmp, -30, 3);
         ImGui::SliderFloat("Spring 1", &springAmp1, -30, 3);
         ImGui::SliderFloat("Spring 2", &springAmp2, -30, 3);
+        plate1Gain.draw();
         ImGui::SliderFloat("Master", &amp, -30, 3);
         // ImGui::PlotLines("Scope", scope.data(), scope.size(), 0, "", -1, 1, ImVec2(0,80));
+        ImGui::End();
+
+        ImGui::Begin("Plate 1");
+        plate1.draw();
         ImGui::End();
 
         // ImGui::Begin("Waveguide");

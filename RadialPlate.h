@@ -36,6 +36,12 @@ class RadialPlate
     /// function to get a value somewhere on the plate.
     void calculate()
     {
+        if (strike)
+        {
+            strike = false;
+            addForce(2, 0, 10000);
+        }
+
         // Precalculate coefficients
         float c1 = 1.0 / (1 + σ₀ * k);
 
@@ -125,13 +131,22 @@ class RadialPlate
         return u(l, m);
     }
 
+    void draw()
+    {
+        if (ImGui::Button("Strike"))
+        {
+            strike = true;
+        }
+    }
+
     private:
     float sampleRate;       // The sample rate.
     float k;                // 1 / sampleRate.
     float hr;               // 1 / numRadialPoints.
     float hΘ;               // 1 / numAngularPoints.
-    float σ₀ = 0.6;     // Freq. independent dampening.
-    float σ₁ = 1e-2;    // Freq. dependent dampening.
+    float σ₀ = 0.5;     // Freq. independent dampening.
+    float σ₁ = 1e-4;    // Freq. dependent dampening.
+    bool strike = false;
 
     RadialDomain ua;
     RadialDomain ub;
@@ -141,5 +156,5 @@ class RadialPlate
     RadialDomain &u;
     RadialDomain &up;
     RadialDomain &ut;
-    float waveSpeed = 200;  // The wave speed.
+    float waveSpeed = 400;  // The wave speed.
 };

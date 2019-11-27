@@ -30,13 +30,13 @@ class RadialDomain
     };
 
     private:
-    int numRadialPoints;
-    int numAngularPoints;
+    int numRadialPoints = 0;
+    int numAngularPoints = 0;
     float hᵣ = 0;
     float hΘ = 0;
-    float center;
+    float center = 0;
     float zero = 0;
     float c1 = 0;
-    float c2;
+    float c2 = 0;
     std::vector<float> data;
 };

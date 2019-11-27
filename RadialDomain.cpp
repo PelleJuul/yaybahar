@@ -9,6 +9,7 @@ RadialDomain::RadialDomain(int numRadialPoints, int numAngularPoints) :
     this->numAngularPoints = numAngularPoints;
     this->hᵣ = 1.0 / numRadialPoints;
     this->hΘ = 1.0 / numAngularPoints;
+    clear();
 }
 
 RadialDomain::RadialDomain(const RadialDomain &other)
