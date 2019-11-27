@@ -30,27 +30,33 @@ int main(int argc, char **argv)
     std::vector<float> scope(1000, 0);
     bool impulse = false;
 
-    Realtime rt = quickAudio([&](int n, float x)
+    Realtime rt = quickAudio([&](int n, int c, float *in, float *out)
     {
-        float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
-        float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
+        for (int i = 0; i < n; i++)
+        {
+            float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
+            float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
 
-        bowedString.addForce(10, -m1 * f1);
-        bowedString.addForce(10, -m2 * f2);
-        spring1.addForce(0, f1);
-        spring2.addForce(0, f2);
+            bowedString.addForce(10, -m1 * f1);
+            bowedString.addForce(10, -m2 * f2);
+            spring1.addForce(0, f1);
+            spring2.addForce(0, f2);
 
-        float b = bowedString.getNextSample();
-        float s1 = spring1.computeNextSample(b);
-        float s2 = spring2.computeNextSample(b);
+            float b = bowedString.getNextSample();
+            float s1 = spring1.computeNextSample(b);
+            float s2 = spring2.computeNextSample(b);
 
-        float ab = powf(10, stringAmp / 10);
-        float as1 = powf(10, springAmp1 / 10);
-        float as2 = powf(10, springAmp2 / 10);
-        float a = powf(10, amp / 10);
- 
-        float y = a * 1e3 * (ab * b + as1 * s1 + as2 * s2);
-        return y;
+            float ab = powf(10, stringAmp / 10);
+            float as1 = powf(10, springAmp1 / 10);
+            float as2 = powf(10, springAmp2 / 10);
+            float a = powf(10, amp / 10);
+    
+            float y = a * 1e3 * (ab * b + as1 * s1 + as2 * s2);
+            out[i * c] = y;
+            out[i * c + 1] = y;
+        }
+
+        return 0;
     });
 
     quickGui([&]()
