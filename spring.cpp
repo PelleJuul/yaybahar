@@ -25,13 +25,12 @@ float Spring::computeNextSample(float input)
     }
 
     u.prepareFreeBoundaryLeft();
-    u.prepareClampedBoundaryRight();
+    u.prepareFreeBoundaryRight();
     up.prepareFreeBoundaryLeft();
-    up.prepareClampedBoundaryRight();
+    up.prepareFreeBoundaryRight();
 
     float kappa2 = kappa * kappa;
 
-    // Compute center nodes
     for (int l = 0; l < numNodes; l++)
     {
         un.at(l) = (1.0 / (1.0 + k * s0)) *

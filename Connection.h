@@ -3,8 +3,8 @@
 class Connection
 {
     public:
-    float ω0 = 10000;
-    float ω1 = 10;
+    float ω0 = 1000;
+    float ω1 = 1;
     float σ = 0.3;
     float ηp = 0;
     float F = 0;

@@ -19,9 +19,11 @@ float Connection::calculateForce(float u1, float u2)
 
     // float ηn = p * F + r * ηp;
 
-    // float Fn = -ω02 * 0.5 * (ηn - ηp) - ω14 * η2 * 0.5 * (ηn - ηp) - (σ / k) * (ηn - ηp);
+    // float Fn = -ω02 * 0.5 * (ηn + ηp) - ω14 * η2 * 0.5 * (ηn + ηp) - (σ / k) * (ηn - ηp);
 
-    float Fn = (-ω02 * 0.5 * (η - ηp) - ω14 * η2 * 0.5 * (η - ηp) - (σ / k) * (η - ηp));
+    // float Fn = (-ω02 * 0.5 * (η + ηp) - ω14 * η2 * 0.5 * (η + ηp) - (σ / k) * (η - ηp));
+
+    float Fn = (-ω02 * η - ω14 * η2 * η - (σ / k) * η);
 
     ηp = η;
     F = Fn;

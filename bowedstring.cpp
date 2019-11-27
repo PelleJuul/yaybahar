@@ -106,6 +106,6 @@ void BowedString::drawGui()
     ImGui::SliderFloat("bow force", &Fb, 0, 5000);
     ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
     ImGui::SliderFloat("bow characteristic", &a, 0, 1000);
-    // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
+    ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
     ImGui::End();
 }

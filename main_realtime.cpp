@@ -43,15 +43,17 @@ int main(int argc, char **argv)
             float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
             float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
             float f11 = c11.calculateForce(
-                spring1.at(spring1.size() - 4),
+                spring1.at(spring1.size() - 1),
                 plate1.get(0, 0)
             );
 
             bowedString.addForce(10, f1);
             bowedString.addForce(10, f2);
 
+            // printf("%.2f\n", f1);
+
             spring1.addForce(0, -f1);
-            spring1.addForce(spring1.size() - 4, f11);
+            spring1.addForce(spring1.size() - 1, f11);
 
             spring2.addForce(0, -f2);
 

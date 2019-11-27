@@ -147,8 +147,8 @@ class RadialPlate
     float k;                // 1 / sampleRate.
     float hr;               // 1 / numRadialPoints.
     float hΘ;               // 1 / numAngularPoints.
-    float σ₀ = 0.5;     // Freq. independent dampening.
-    float σ₁ = 1e-4;    // Freq. dependent dampening.
+    float σ₀ = 2.0;     // Freq. independent dampening.
+    float σ₁ = 1e-5;    // Freq. dependent dampening.
     bool strike = false;
 
     RadialDomain ua;
@@ -159,5 +159,5 @@ class RadialPlate
     RadialDomain &u;
     RadialDomain &up;
     RadialDomain &ut;
-    float waveSpeed = 100;  // The wave speed.
+    float waveSpeed = 300;  // The wave speed.
 };
