@@ -46,8 +46,10 @@ class RadialPlate
         float c1 = 1.0 / (1 + σ₀ * k);
 
         // Update non-center points not on the perimeter
+        #pragma clang loop unroll(full)
         for (int l = 1; l < numRadialPoints - 1; l++)
         {
+            #pragma clang loop unroll(full)
             for (int m = 0; m < numAngularPoints; m++)
             {
                 // printf("%i, %i\n", l, m);
@@ -70,6 +72,7 @@ class RadialPlate
             // Update non-center points on the perimeter
             int l = numRadialPoints - 1;
 
+            #pragma clang loop unroll(full)
             for (int m = 0; m < numAngularPoints; m++)
             {
                 float Δu = u.laplacePerimeter(m);
@@ -156,5 +159,5 @@ class RadialPlate
     RadialDomain &u;
     RadialDomain &up;
     RadialDomain &ut;
-    float waveSpeed = 400;  // The wave speed.
+    float waveSpeed = 100;  // The wave speed.
 };

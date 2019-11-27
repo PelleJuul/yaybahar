@@ -92,6 +92,7 @@ int main(int argc, char **argv)
         ImGui::End();
 
         ImGui::Begin("Mixer");
+        ImGui::LabelText("CPU load", "%.2f", rt.getCpuLoad());
         ImGui::SliderFloat("String", &stringAmp, -30, 3);
         ImGui::SliderFloat("Spring 1", &springAmp1, -30, 3);
         ImGui::SliderFloat("Spring 2", &springAmp2, -30, 3);
