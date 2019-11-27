@@ -26,7 +26,14 @@ struct Spring
     LineDomain &up;
     LineDomain &un;
 
+    bool strike = false;
+
     Spring(int L, float fs);
+
+    int size()
+    {
+        return numNodes;
+    }
 
     void addForce(int l, float input)
     {

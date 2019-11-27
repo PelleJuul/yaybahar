@@ -18,14 +18,18 @@ Spring::Spring(int L, float fs) :
 
 float Spring::computeNextSample(float input)
 {
+    if (strike)
+    {
+        addForce(0.2 * numNodes, 10000);
+        strike = false;
+    }
+
     u.prepareFreeBoundaryLeft();
     u.prepareClampedBoundaryRight();
     up.prepareFreeBoundaryLeft();
     up.prepareClampedBoundaryRight();
 
     float kappa2 = kappa * kappa;
-
-    f.at(10) = 100000 * input;
 
     // Compute center nodes
     for (int l = 1; l < numNodes; l++)
@@ -37,7 +41,7 @@ float Spring::computeNextSample(float input)
             + 2 * k * s1 * (u.dxx(l) - up.dxx(l))
             - up.at(l)
             + 2 * u.at(l)
-            - k2 * f.at(l)
+            + k2 * f.at(l)
         );
     }
 
@@ -56,5 +60,11 @@ void Spring::drawGui()
     ImGui::SliderFloat("Stiffness", &kappa, 0, 50.0);
     ImGui::SliderFloat("Independet dampening", &s0, 0, 10);
     ImGui::SliderFloat("Dependent dampening", &s1, 0, 10e-3);
+
+    if (ImGui::Button("Strike"))
+    {
+        strike = true;
+    }
+
     ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
 };

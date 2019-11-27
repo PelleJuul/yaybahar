@@ -34,17 +34,17 @@ int main(int argc, char **argv)
     {
         for (int i = 0; i < n; i++)
         {
-            float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
-            float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
+            float f1 = c1.calculateForce(bowedString.at(10), spring1.at(2));
+            float f2 = c2.calculateForce(bowedString.at(10), spring2.at(2));
 
-            bowedString.addForce(10, -m1 * f1);
-            bowedString.addForce(10, -m2 * f2);
-            spring1.addForce(0, f1);
-            spring2.addForce(0, f2);
+            bowedString.addForce(10, f1);
+            bowedString.addForce(10, f2);
+            spring1.addForce(2, -f1);
+            spring2.addForce(2, -f2);
 
             float b = bowedString.getNextSample();
-            float s1 = spring1.computeNextSample(b);
-            float s2 = spring2.computeNextSample(b);
+            float s1 = spring1.computeNextSample(0);
+            float s2 = spring2.computeNextSample(0);
 
             float ab = powf(10, stringAmp / 10);
             float as1 = powf(10, springAmp1 / 10);
