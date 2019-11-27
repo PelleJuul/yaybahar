@@ -6,6 +6,7 @@
 #include "spring.h"
 #include "waveguide.h"
 #include "Connection.h"
+#include "RadialPlate.h"
 
 int main(int argc, char **argv)
 {
@@ -14,13 +15,18 @@ int main(int argc, char **argv)
     float stringAmp = 0.0;
     float springAmp1 = 0.0;
     float springAmp2 = 0.0;
+    Gain plate1Gain("Plate 1");
+
     BowedString bowedString(55, fs);
     Spring spring1(200, fs);
     Spring spring2(200, fs);
     Waveguide wg(ceil(fs * (1.0 / 220.0)) + 1);
 
+    RadialPlate<4, 12> plate1(44100);
+
     Connection c1(44100);
     Connection c2(44100);
+    Connection c11(44100);
 
     float m1 = 1;
     float m2 = 1;
@@ -34,13 +40,13 @@ int main(int argc, char **argv)
     {
         for (int i = 0; i < n; i++)
         {
-            float f1 = c1.calculateForce(bowedString.at(10), spring1.at(2));
-            float f2 = c2.calculateForce(bowedString.at(10), spring2.at(2));
+            float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
+            float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
 
             bowedString.addForce(10, f1);
             bowedString.addForce(10, f2);
-            spring1.addForce(2, -f1);
-            spring2.addForce(2, -f2);
+            spring1.addForce(0, -f1);
+            spring2.addForce(0, -f2);
 
             float b = bowedString.getNextSample();
             float s1 = spring1.computeNextSample(0);
