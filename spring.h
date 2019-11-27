@@ -30,8 +30,10 @@ struct Spring
 
     void addForce(int l, float input)
     {
-        f.at(l) = input;
+        f.at(l) += input;
     }
+
+    float &at(int l) { return u.at(l); };
 
     float computeNextSample(float input);
     void drawGui();

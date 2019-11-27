@@ -5,6 +5,7 @@
 #include "bowedstring.h"
 #include "spring.h"
 #include "waveguide.h"
+#include "Connection.h"
 
 int main(int argc, char **argv)
 {
@@ -13,10 +14,16 @@ int main(int argc, char **argv)
     float stringAmp = 0.0;
     float springAmp1 = 0.0;
     float springAmp2 = 0.0;
-    BowedString bowedString(100, fs);
-    Spring spring1(100, fs);
-    Spring spring2(100, fs);
+    BowedString bowedString(55, fs);
+    Spring spring1(200, fs);
+    Spring spring2(200, fs);
     Waveguide wg(ceil(fs * (1.0 / 220.0)) + 1);
+
+    Connection c1(44100);
+    Connection c2(44100);
+
+    float m1 = 1;
+    float m2 = 1;
 
     bowedString.Fb = 0;
 
@@ -25,6 +32,14 @@ int main(int argc, char **argv)
 
     Realtime rt = quickAudio([&](int n, float x)
     {
+        float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
+        float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
+
+        bowedString.addForce(10, -m1 * f1);
+        bowedString.addForce(10, -m2 * f2);
+        spring1.addForce(0, f1);
+        spring2.addForce(0, f2);
+
         float b = bowedString.getNextSample();
         float s1 = spring1.computeNextSample(b);
         float s2 = spring2.computeNextSample(b);
@@ -33,27 +48,8 @@ int main(int argc, char **argv)
         float as1 = powf(10, springAmp1 / 10);
         float as2 = powf(10, springAmp2 / 10);
         float a = powf(10, amp / 10);
-
-        for (int i = 1; i < scope.size(); i++)
-        {
-            scope[i-1] = scope[i];
-        }
-
-        // float l = fs * (1.0 / 220);
-        // float fb = 0.99 * wg.read(l);
-
-        // if (impulse)
-        // {
-        //     wg.write(fb + 0.5);
-        //     impulse = false;
-        // }
-        // else
-        // {
-        //     wg.write(fb);
-        // }
-        
+ 
         float y = a * 1e3 * (ab * b + as1 * s1 + as2 * s2);
-        // scope[scope.size() - 1] = y;
         return y;
     });
 

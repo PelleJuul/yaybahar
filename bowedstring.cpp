@@ -7,6 +7,7 @@ BowedString::BowedString(int L, float fs) :
     ua(L),
     ub(L),
     uc(L),
+    f(L),
     u(ua),
     un(ub),
     up(uc)
@@ -35,6 +36,7 @@ inline float thetad(float a, float eta)
 inline float update(
     LineDomain &u,
     LineDomain &up,
+    LineDomain &f,
     int l,
     float vrel,
     float Fb,
@@ -49,7 +51,8 @@ inline float update(
         - pow2(k) * Fb * theta(a, vrel)
         + sigma0 * k * up.at(l)
         + 2 * u.at(l)
-        - up.at(l));
+        - up.at(l)
+        + pow2(k) * f.at(l));
 }
 
 float BowedString::getNextSample()
@@ -61,14 +64,14 @@ float BowedString::getNextSample()
 
     for (int l = 0; l < lb; l++)
     {
-        un.at(l) = c1 * update(u, up, l, 0, 0, k, L, wavespeed, a, sigma0);
+        un.at(l) = c1 * update(u, up, f, l, 0, 0, k, L, wavespeed, a, sigma0);
     }
  
     for (int i = 0; i < 100; i++)
     {
-        float f = c2 * c1 * update(u, up, lb, vrel, Fb, k, L, wavespeed, a, sigma0) - c2 * up.at(lb) - vb - vrel;
-        float fd = c2 * pow2(k) * Fb * thetad(a, vrel) - 1;
-        float vreln = vrel - (f / fd);
+        float num = c2 * c1 * update(u, up, f, lb, vrel, Fb, k, L, wavespeed, a, sigma0) - c2 * up.at(lb) - vb - vrel;
+        float denom = c2 * pow2(k) * Fb * thetad(a, vrel) - 1;
+        float vreln = vrel - (num / denom);
 
         if (fabs(vreln - vrel) < 10e-4)
         {
@@ -79,11 +82,11 @@ float BowedString::getNextSample()
         vrel = vreln;
     }
 
-    un.at(lb) = c1 * update(u, up, lb, vrel, Fb, k, L, wavespeed, a, sigma0);
+    un.at(lb) = c1 * update(u, up, f, lb, vrel, Fb, k, L, wavespeed, a, sigma0);
 
     for (int l = lb+1; l < L; l++)
     {
-        un.at(l) = c1 * update(u, up, l, 0, 0, k, L, wavespeed, a, sigma0);
+        un.at(l) = c1 * update(u, up, f, l, 0, 0, k, L, wavespeed, a, sigma0);
     }
 
     LineDomain &uswap = un;
@@ -91,13 +94,15 @@ float BowedString::getNextSample()
     u = un;
     un = uswap;
 
+    f.clear();
+
     return u.at(round(L * 0.8));
 }
 
 void BowedString::drawGui()
 {
     ImGui::Begin("Bowed String");
-    ImGui::SliderFloat("wavespeed", &wavespeed, 1, 400);
+    ImGui::SliderFloat("wavespeed", &wavespeed, 1, 800);
     ImGui::SliderFloat("bow force", &Fb, 0, 5000);
     ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
     ImGui::SliderFloat("bow characteristic", &a, 0, 1000);

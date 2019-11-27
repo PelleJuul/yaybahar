@@ -28,6 +28,7 @@ struct BowedString
     LineDomain ua;
     LineDomain ub;
     LineDomain uc;
+    LineDomain f;
     LineDomain &u;
     LineDomain &un;
     LineDomain &up;
@@ -35,6 +36,12 @@ struct BowedString
 
     BowedString(int L, float fs);
 
+    void addForce(int l, float input)
+    {
+        f.at(l) += input;
+    }
+
     float getNextSample();
+    float &at(int l) { return u.at(l); };
     void drawGui();
 };
