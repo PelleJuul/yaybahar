@@ -22,6 +22,7 @@ struct Spring
     LineDomain ub;
     LineDomain uc;
     LineDomain f;
+    LineDomain dxxp;
     LineDomain &u;
     LineDomain &up;
     LineDomain &un;

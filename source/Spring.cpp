@@ -6,6 +6,7 @@ Spring::Spring(int L, float fs) :
     ua(L),
     ub(L),
     uc(L),
+    dxxp(L),
     f(L),
     u(ua),
     up(ub),
@@ -33,15 +34,19 @@ float Spring::computeNextSample(float input)
 
     for (int l = 0; l < numNodes; l++)
     {
+        float dxx = u.dxx(l);
+
         un.at(l) = (1.0 / (1.0 + k * s0)) *
         (
             -kappa2 * k2 * u.dxxxx(l)
             + k * s0 * up.at(l)
-            + 2 * k * s1 * (u.dxx(l) - up.dxx(l))
+            + 2 * k * s1 * (dxx - dxxp.at(l))
             - up.at(l)
             + 2 * u.at(l)
             + k2 * f.at(l)
         );
+
+        dxxp.at(l) = dxx;
     }
 
     f.clear();
