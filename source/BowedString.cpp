@@ -28,16 +28,6 @@ void BowedString::setTensionFromWavespeed(float wavespeed)
     T = wavespeed * wavespeed * mu;
 }
 
-inline float theta(float a, float eta)
-{
-    return sqrt(2 * a) * eta * exp(-a * pow2(eta) + 0.5);
-}
-
-inline float thetad(float a, float eta)
-{
-    return sqrt(2 * a) * (exp(-a * pow2(eta) + 0.5) - 2 * a * pow2(eta) * exp(-a * pow2(eta) + 0.5));
-}
-
 float BowedString::getNextSample()
 {
     // Compute bowing point
@@ -51,6 +41,7 @@ float BowedString::getNextSample()
     }
  
     float delta = 1000.0;
+    sqrt2a = sqrt(2 * a);
 
     for (int i = 0; i < 50 && ((delta < -10e-4) || (delta > 10e-4)); i++)
     {
@@ -86,6 +77,16 @@ void BowedString::drawGui()
     ImGui::SliderFloat("bow characteristic", &a, 0, 1000);
     // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
     ImGui::End();
+}
+
+float BowedString::theta(float a, float eta)
+{
+    return sqrt2a * eta * exp(-a * pow2(eta) + 0.5);
+}
+
+float BowedString::thetad(float a, float eta)
+{
+    return sqrt2a * (exp(-a * pow2(eta) + 0.5) - 2 * a * pow2(eta) * exp(-a * pow2(eta) + 0.5));
 }
 
 float BowedString::update(int l, float Fb, float vrel)
