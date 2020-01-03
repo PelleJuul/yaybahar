@@ -11,6 +11,10 @@ class LineDomain
 
     void clear();
 
+    /// Compute the first order forwards difference.
+    /// @param  l   The point to evaluate at.
+    float dxf(int l);
+
     float dxx(int l);
     
     float dxxxx(int l);
@@ -23,7 +27,7 @@ class LineDomain
 
     size_t size()
     {
-        return v.size();
+        return L;
     };
 
     float *data()

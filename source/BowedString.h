@@ -18,6 +18,7 @@ struct BowedString
 
     // String derived parameters
     float A;            // Cross-sectional area, m^2
+    float alpha;        // Increse of tension due to amplitude, unitless
     float I;            // Moment of inertia, kg m^2
     float kappa2;       // Stiffness squared, N
     float M;            // Mass, kg
@@ -33,6 +34,7 @@ struct BowedString
     float k;
     float c1;
     float c2;
+    float g;    // Increased tension due to amplitude
 
     // State variables
     LineDomain ua;

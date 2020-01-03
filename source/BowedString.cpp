@@ -33,6 +33,7 @@ BowedString::BowedString(int L, float fs) :
 void BowedString::calculateDerivedParameters()
 {
     A = M_PI * r * r;
+    alpha = (E * A) / T;
     M = p * A;
     I = 0.5 * M * r * r;
     kappa2 = (E * I) / M;
@@ -47,6 +48,17 @@ void BowedString::setTensionFromWavespeed(float wavespeed)
 
 float BowedString::getNextSample()
 {
+    // Compute g
+
+    float sum = 0;
+
+    for (int l = 0; l < u.size(); l++)
+    {
+        sum += h * pow2(u.dxf(l));
+    }
+
+    g = 1 + 0.5 * alpha * sum;
+
     // Compute bowing point
     int lb = L * 0.2;
 
@@ -116,7 +128,7 @@ float BowedString::thetad(float a, float eta)
 float BowedString::update(int l, float Fb, float vrel, float dxx)
 {
     return c1 * (
-          pow2(k) * omega2 * dxx
+          pow2(k) * omega2 * g * dxx
         - pow2(k) * kappa2 * u.dxxxx(l)
         + sigma0 * k * up.at(l)
         + 2 * u.at(l)

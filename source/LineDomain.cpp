@@ -20,6 +20,11 @@ void LineDomain::clear()
     }
 }
 
+float LineDomain::dxf(int l)
+{
+    return L * (at(l+1) - at(l));
+}
+
 float LineDomain::dxx(int l)
 {
     return L2 * (at(l + 1) - 2 * at(l) + at(l - 1));
