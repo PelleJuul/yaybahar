@@ -69,7 +69,7 @@ struct BowedString
     /// @param  l       The index of the point to compute for.
     /// @param  Fb      The bowing force for point l.
     /// @param  vrel    Relative bow velocity. Doesn't matter if `Fb` is zero.
-    float update(int l, float Fb, float vrel);
+    float update(int l, float Fb, float vrel, float dxx);
 
     private:
     /// precomputed values for optimizations
