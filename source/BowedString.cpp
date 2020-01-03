@@ -38,6 +38,7 @@ void BowedString::calculateDerivedParameters()
     I = 0.5 * M * r * r;
     kappa2 = (E * I) / M;
     omega2 = T / M;
+    Fbm = Fb / M;
 }
 
 void BowedString::setTensionFromWavespeed(float wavespeed)
@@ -60,7 +61,7 @@ float BowedString::getNextSample()
     g = 1 + 0.5 * alpha * sum;
 
     // Compute bowing point
-    int lb = L * 0.2;
+    int lb = L - 7;
 
     // Update up to bowing point
 
@@ -75,14 +76,14 @@ float BowedString::getNextSample()
 
     for (int i = 0; i < 50 && fabs(delta) > 10e-4; i++)
     {
-        f.at(lb) = -Fb * theta(a, vrel);
-        float num = c2 * update(lb, Fb, vrel, dxxlb) - c2 * up.at(lb) - vb - vrel;
-        float denom = c2 * pow2(k) * -Fb * thetad(a, vrel) - 1;
+        f.at(lb) = -Fbm * theta(a, vrel);
+        float num = c2 * update(lb, Fbm, vrel, dxxlb) - c2 * up.at(lb) - vb - vrel;
+        float denom = c2 * pow2(k) * -Fbm * thetad(a, vrel) - 1;
         delta = (num / denom);
         vrel = vrel - delta;
     }
 
-    f.at(lb) = -Fb * theta(a, vrel);
+    f.at(lb) = -Fbm * theta(a, vrel);
     un.at(lb) = update(lb, Fb, vrel, dxxlb);
 
     for (int l = lb+1; l < L; l++)
@@ -105,9 +106,10 @@ void BowedString::drawGui()
     ImGui::Begin("Bowed String");
     ImGui::SliderFloat("wavespeed", &guiWavespeed, 1, 800);
     ImGui::InputFloat("Young's modulus", &E, 1e4, 1e5, 0);
-    ImGui::SliderFloat("bow force", &Fb, 0, 5000);
+    ImGui::SliderFloat("bow force", &Fb, 0, 100);
+    ImGui::LabelText("Fbm", "%.2f", Fbm);
     ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
-    ImGui::SliderFloat("bow characteristic", &a, 0, 1000);
+    ImGui::SliderFloat("bow characteristic", &a, 0, 100);
     // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
     ImGui::End();
 

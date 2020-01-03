@@ -22,12 +22,15 @@ struct BowedString
     float I;            // Moment of inertia, kg m^2
     float kappa2;       // Stiffness squared, N
     float M;            // Mass, kg
-    float omega2;       // Wavespeed squared, m/s
+    float omega2;       // Wavespeed squared, m / s
 
     // Bow parameters
-    float Fb = 1000;
-    float vb = 0.2;
-    float a = 50;
+    float Fb = 0.0;     // Bow force, N
+    float vb = 0.2;     // Bow speed, m/s
+    float a = 10;       // Bow characteristic, unitless
+
+    // Bow derived parameters
+    float Fbm = 0;      // Bow force scaled by mass, m / s^2
 
     // Derived parameters
     float h;
