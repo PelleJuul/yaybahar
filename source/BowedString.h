@@ -14,7 +14,8 @@ struct BowedString
     float p = 8000;     // Density, kg / m^3
     float r = 0.001;    // Radius, m
     float T = 40;       // Tension, N
-    float sigma0 = 2.0; // 
+    float sigma0 = 2.0; // Dampening, unitless
+    float sigma1 = 1e-2;// Frequency dependent dampening, unitless
 
     // String derived parameters
     float A;            // Cross-sectional area, m^2
@@ -44,6 +45,7 @@ struct BowedString
     LineDomain ub;
     LineDomain uc;
     LineDomain f;
+    LineDomain dxxp;
     LineDomain &u;
     LineDomain &un;
     LineDomain &up;

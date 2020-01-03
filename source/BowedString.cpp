@@ -8,6 +8,7 @@ BowedString::BowedString(int L, float fs) :
     ub(L),
     uc(L),
     f(L),
+    dxxp(L),
     u(ua),
     un(ub),
     up(uc)
@@ -67,7 +68,9 @@ float BowedString::getNextSample()
 
     for (int l = 0; l < lb; l++)
     {
-        un.at(l) = update(l, 0, 0, u.dxx(l));
+        float dxx = u.dxx(l);
+        un.at(l) = update(l, 0, 0, dxx);
+        dxxp.at(l) = dxx;
     }
  
     float dxxlb = u.dxx(lb);
@@ -85,10 +88,13 @@ float BowedString::getNextSample()
 
     f.at(lb) = -Fbm * theta(a, vrel);
     un.at(lb) = update(lb, Fb, vrel, dxxlb);
+    dxxp.at(lb) = dxxlb;
 
     for (int l = lb+1; l < L; l++)
     {
-        un.at(l) = update(l, 0, 0, u.dxx(l));
+        float dxx = u.dxx(l);
+        un.at(l) = update(l, 0, 0, dxx);
+        dxxp.at(l) = dxx;
     }
 
     LineDomain &uswap = un;
@@ -133,6 +139,7 @@ float BowedString::update(int l, float Fb, float vrel, float dxx)
           pow2(k) * omega2 * g * dxx
         - pow2(k) * kappa2 * u.dxxxx(l)
         + sigma0 * k * up.at(l)
+        + 2 * sigma1 * k * (dxx - dxxp.at(l))
         + 2 * u.at(l)
         - up.at(l)
         + pow2(k) * f.at(l));
