@@ -51,4 +51,10 @@ struct BowedString
     float getNextSample();
     float &at(int l) { return u.at(l); };
     void drawGui();
+
+    /// Compute the next value of point l.
+    /// @param  l       The index of the point to compute for.
+    /// @param  Fb      The bowing force for point l.
+    /// @param  vrel    Relative bow velocity. Doesn't matter if `Fb` is zero.
+    float update(int l, float Fb, float vrel);
 };
