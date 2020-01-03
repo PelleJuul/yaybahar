@@ -31,18 +31,19 @@ float Spring::computeNextSample(float input)
     up.prepareFreeBoundaryRight();
 
     float kappa2 = kappa * kappa;
+    double c1 = (1.0 / (1.0 + k * s0));
 
     for (int l = 0; l < numNodes; l++)
     {
         float dxx = u.dxx(l);
 
-        un.at(l) = (1.0 / (1.0 + k * s0)) *
+        un.at(l) = c1 *
         (
             -kappa2 * k2 * u.dxxxx(l)
             + k * s0 * up.at(l)
             + 2 * k * s1 * (dxx - dxxp.at(l))
-            - up.at(l)
             + 2 * u.at(l)
+            - up.at(l)
             + k2 * f.at(l)
         );
 
