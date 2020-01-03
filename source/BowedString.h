@@ -7,16 +7,21 @@ struct BowedString
 {
     // Basic parameters
     float fs;
-
-    // Physical parameters
-    float E = 200e6;    // Pa
-    float mu = 0.003;   // kg / m
-    float T = 40;       // N
+    int L;
 
     // String parameters
-    int L;
-    float wavespeed = 200;
-    float sigma0 = 2.0;
+    float E = 200e6;    // Young's modulus, Pa (N / m^2)
+    float p = 8000;     // Density, kg / m^3
+    float r = 0.001;    // Radius, m
+    float T = 40;       // Tension, N
+    float sigma0 = 2.0; // 
+
+    // String derived parameters
+    float A;            // Cross-sectional area, m^2
+    float I;            // Moment of inertia, kg m^2
+    float kappa2;       // Stiffness squared, N
+    float M;            // Mass, kg
+    float omega2;       // Wavespeed squared, m/s
 
     // Bow parameters
     float Fb = 1000;
@@ -39,12 +44,17 @@ struct BowedString
     LineDomain &up;
     float vrel;
 
+    // GUI Variables
+    float guiWavespeed = 100;
+
     BowedString(int L, float fs);
 
     void addForce(int l, float input)
     {
         f.at(l) += input;
     }
+
+    void calculateDerivedParameters();
 
     void setTensionFromWavespeed(float wavespeed);
 
