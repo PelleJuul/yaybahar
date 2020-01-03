@@ -22,13 +22,19 @@ BowedString::BowedString(int L, float fs) :
     c1 = 1 / (1 + k*sigma0);
     c2 = 1 / (2*k);
     calculateDerivedParameters();
+    ua.prepareClampedBoundaryLeft();
+    ua.prepareClampedBoundaryRight();
+    ub.prepareClampedBoundaryLeft();
+    ub.prepareClampedBoundaryRight();
+    uc.prepareClampedBoundaryLeft();
+    uc.prepareClampedBoundaryRight();
 };
 
 void BowedString::calculateDerivedParameters()
 {
     A = M_PI * r * r;
-    I = 0.5 * M * r * r;
     M = p * A;
+    I = 0.5 * M * r * r;
     kappa2 = (E * I) / M;
     omega2 = T / M;
 }
@@ -86,6 +92,7 @@ void BowedString::drawGui()
 {
     ImGui::Begin("Bowed String");
     ImGui::SliderFloat("wavespeed", &guiWavespeed, 1, 800);
+    ImGui::InputFloat("Young's modulus", &E, 1e4, 1e5, 0);
     ImGui::SliderFloat("bow force", &Fb, 0, 5000);
     ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
     ImGui::SliderFloat("bow characteristic", &a, 0, 1000);
@@ -110,6 +117,7 @@ float BowedString::update(int l, float Fb, float vrel, float dxx)
 {
     return c1 * (
           pow2(k) * omega2 * dxx
+        - pow2(k) * kappa2 * u.dxxxx(l)
         + sigma0 * k * up.at(l)
         + 2 * u.at(l)
         - up.at(l)
