@@ -48,7 +48,7 @@ float BowedString::getNextSample()
 
     for (int l = 0; l < lb; l++)
     {
-        un.at(l) = c1 * update(l, 0, 0, u.dxx(l));
+        un.at(l) = update(l, 0, 0, u.dxx(l));
     }
  
     float dxxlb = u.dxx(lb);
@@ -58,18 +58,18 @@ float BowedString::getNextSample()
     for (int i = 0; i < 50 && fabs(delta) > 10e-4; i++)
     {
         f.at(lb) = -Fb * theta(a, vrel);
-        float num = c2 * c1 * update(lb, Fb, vrel, dxxlb) - c2 * up.at(lb) - vb - vrel;
+        float num = c2 * update(lb, Fb, vrel, dxxlb) - c2 * up.at(lb) - vb - vrel;
         float denom = c2 * pow2(k) * -Fb * thetad(a, vrel) - 1;
         delta = (num / denom);
         vrel = vrel - delta;
     }
 
     f.at(lb) = -Fb * theta(a, vrel);
-    un.at(lb) = c1 * update(lb, Fb, vrel, dxxlb);
+    un.at(lb) = update(lb, Fb, vrel, dxxlb);
 
     for (int l = lb+1; l < L; l++)
     {
-        un.at(l) = c1 * update(l, 0, 0, u.dxx(l));
+        un.at(l) = update(l, 0, 0, u.dxx(l));
     }
 
     LineDomain &uswap = un;
@@ -108,7 +108,7 @@ float BowedString::thetad(float a, float eta)
 
 float BowedString::update(int l, float Fb, float vrel, float dxx)
 {
-    return (
+    return c1 * (
           pow2(k) * omega2 * dxx
         + sigma0 * k * up.at(l)
         + 2 * u.at(l)
