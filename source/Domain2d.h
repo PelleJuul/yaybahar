@@ -7,6 +7,10 @@ class Domain2d
     public:
     Domain2d(int cols, int rows);
 
+    float getNumCols() { return cols; };
+
+    float getNumRows() { return rows; };
+
     void clear();
 
     void prepareClampedBoundaryTop();

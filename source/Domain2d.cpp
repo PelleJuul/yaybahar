@@ -3,6 +3,8 @@
 Domain2d::Domain2d(int cols, int rows) :
     data((rows + 2) * (cols + 2))
 {
+    this->cols = cols;
+    this->rows = rows;
     hc = 1.0 / cols;
     hr = 1.0 / rows;
     cols2 = cols * cols;
