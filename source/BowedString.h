@@ -8,6 +8,11 @@ struct BowedString
     // Basic parameters
     float fs;
 
+    // Physical parameters
+    float E = 200e6;    // Pa
+    float mu = 0.003;   // kg / m
+    float T = 40;       // N
+
     // String parameters
     int L;
     float wavespeed = 200;
@@ -40,6 +45,8 @@ struct BowedString
     {
         f.at(l) += input;
     }
+
+    void setTensionFromWavespeed(float wavespeed);
 
     float getNextSample();
     float &at(int l) { return u.at(l); };

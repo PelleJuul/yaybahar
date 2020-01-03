@@ -3,6 +3,7 @@
 // Pre-template:    65%
 
 #include "RadialDomain.h"
+#include <pal.h>
 
 #define sqr(x)   (x * x)
 
@@ -39,7 +40,7 @@ class RadialPlate
         if (strike)
         {
             strike = false;
-            addForce(2, 0, 10000);
+            addForce(2, 0, 5000);
         }
 
         // Precalculate coefficients
@@ -142,13 +143,18 @@ class RadialPlate
         }
     }
 
+    void setWavespeed(float value)
+    {
+        waveSpeed = value;
+    }
+
     private:
     float sampleRate;       // The sample rate.
     float k;                // 1 / sampleRate.
     float hr;               // 1 / numRadialPoints.
     float hΘ;               // 1 / numAngularPoints.
     float σ₀ = 2.0;     // Freq. independent dampening.
-    float σ₁ = 1e-5;    // Freq. dependent dampening.
+    float σ₁ = 1e-8;    // Freq. dependent dampening.
     bool strike = false;
 
     RadialDomain ua;

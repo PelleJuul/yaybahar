@@ -1,4 +1,4 @@
-#include "bowedstring.h"
+#include "BowedString.h"
 #include "fds.h"
 #include <cmath>
 #include <pal.h>
@@ -22,6 +22,11 @@ BowedString::BowedString(int L, float fs) :
     c1 = 1 / (1 + k*sigma0);
     c2 = 1 / (2*k);
 };
+
+void BowedString::setTensionFromWavespeed(float wavespeed)
+{
+    T = wavespeed * wavespeed * mu;
+}
 
 inline float theta(float a, float eta)
 {
@@ -67,7 +72,7 @@ float BowedString::getNextSample()
         un.at(l) = c1 * update(u, up, f, l, 0, 0, k, L, wavespeed, a, sigma0);
     }
  
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 50; i++)
     {
         float num = c2 * c1 * update(u, up, f, lb, vrel, Fb, k, L, wavespeed, a, sigma0) - c2 * up.at(lb) - vb - vrel;
         float denom = c2 * pow2(k) * Fb * thetad(a, vrel) - 1;
@@ -106,6 +111,6 @@ void BowedString::drawGui()
     ImGui::SliderFloat("bow force", &Fb, 0, 5000);
     ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
     ImGui::SliderFloat("bow characteristic", &a, 0, 1000);
-    ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
+    // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
     ImGui::End();
 }

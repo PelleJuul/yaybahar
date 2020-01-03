@@ -1,4 +1,5 @@
 #include "RadialDomain.h"
+#include <pal.h>
 
 #define sqr(x)   (x * x)
 

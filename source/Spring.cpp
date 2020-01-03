@@ -1,4 +1,4 @@
-#include "spring.h"
+#include "Spring.h"
 #include <pal.h>
 #include "LineDomain.h"
 
@@ -65,5 +65,5 @@ void Spring::drawGui()
         strike = true;
     }
 
-    ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
+    // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
 };
