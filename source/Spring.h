@@ -10,9 +10,10 @@ struct Spring
     int numNodes;
 
     // Spring parameters
-    float kappa = 5.06;
-    float s0 = 1.0;
-    float s1 = 10e-8;
+    float kappa = 5.06;     // Stiffness, unitless
+    float s0 = 1.0;         // Dampening, unitless
+    float s1 = 10e-8;       // Frequency dependent dampening, unitless
+    float M = 0.1;          // Mass, kg  
 
     // Derived parameters
     float k2;
@@ -31,18 +32,21 @@ struct Spring
 
     Spring(int L, float fs);
 
+    float &at(int l) { return u.at(l); };
+    
+    void addForce(int l, float input)
+    {
+        f.at(l) += input / M;
+    }
+
+    float computeNextSample(float input);
+
+    void drawGui();
+
+    float getMass() { return M; };
+
     int size()
     {
         return numNodes;
     }
-
-    void addForce(int l, float input)
-    {
-        f.at(l) += input;
-    }
-
-    float &at(int l) { return u.at(l); };
-
-    float computeNextSample(float input);
-    void drawGui();
 };

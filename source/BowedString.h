@@ -9,9 +9,16 @@ struct BowedString
     float fs;
     int L;
 
+    // Derived parameters
+    float h;
+    float k;
+    float c1;
+    float c2;
+    float g;    // Increased tension due to amplitude
+
     // String parameters
     float E = 200e6;    // Young's modulus, Pa (N / m^2)
-    float p = 8000;     // Density, kg / m^3
+    float p = 8000;     // Density, kg / m^3 (steel)
     float r = 0.001;    // Radius, m
     float T = 40;       // Tension, N
     float sigma0 = 2.0; // Dampening, unitless
@@ -33,13 +40,6 @@ struct BowedString
     // Bow derived parameters
     float Fbm = 0;      // Bow force scaled by mass, m / s^2
 
-    // Derived parameters
-    float h;
-    float k;
-    float c1;
-    float c2;
-    float g;    // Increased tension due to amplitude
-
     // State variables
     LineDomain ua;
     LineDomain ub;
@@ -58,10 +58,12 @@ struct BowedString
 
     void addForce(int l, float input)
     {
-        f.at(l) += input;
+        f.at(l) += input / getMass();
     }
 
     void calculateDerivedParameters();
+
+    float getMass() { return M; };
 
     void setTensionFromWavespeed(float wavespeed);
 
