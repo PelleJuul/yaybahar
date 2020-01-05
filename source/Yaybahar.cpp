@@ -6,8 +6,9 @@
 #include "Spring.h"
 #include "Connection.h"
 #include "RadialPlate.h"
+#include "RectMembrane.h"
 
-// pal build Yaybahar.cpp BowedString.cpp Connection.cpp LineDomain.cpp RadialDomain.cpp Spring.cpp Domain2d.cpp -O3 -o yaybahar
+// pal build Yaybahar.cpp BowedString.cpp Connection.cpp LineDomain.cpp RadialDomain.cpp Spring.cpp Domain2d.cpp RectMembrane.cpp -O3 -o yaybahar
 
 int main(int argc, char **argv)
 {
@@ -16,22 +17,19 @@ int main(int argc, char **argv)
     float stringAmp = 0.0;
     float springAmp1 = 0.0;
     float springAmp2 = 0.0;
-    Gain plate1Gain("Plate 1");
+    Gain drum1Gain("Drum 1");
     Gain plate2Gain("Plate 2");
 
     BowedString bowedString(55, fs);
-    Spring spring1(250, fs);
-    Spring spring2(250, fs);
+    Spring spring1(150, fs);
+    Spring spring2(150, fs);
+    RectMembrane drum1(9, 9, fs);
+    RectMembrane drum2(9, 9, fs);
 
-    RadialPlate<5, 13> plate1(44100);
-    RadialPlate<5, 13> plate2(44100);
-    plate1.setWavespeed(75);
-    plate2.setWavespeed(150);
-
-    Connection c1(44100);
-    Connection c2(44100);
-    Connection c11(44100);
-    Connection c22(44100);
+    Connection connectionStringSpring1(44100);
+    Connection connectionStringSpring2(44100);
+    Connection connectionSpring1Drum1(44100);
+    Connection connectionSpring2Drum2(44100);
 
     float ab;
     float as1;
@@ -50,50 +48,64 @@ int main(int argc, char **argv)
     {
         for (int i = 0; i < n; i++)
         {
-            float f1 = c1.calculateForce(bowedString.at(10), spring1.at(0));
-            float f2 = c2.calculateForce(bowedString.at(10), spring2.at(0));
-            float f11 = c11.calculateForce(
+            // Compute all forces
+            float forceStringSpring1 = connectionStringSpring1.calculateForce(
+                bowedString.at(3), spring1.at(0));
+
+            float forceStringSpring2 = connectionStringSpring2.calculateForce(
+                bowedString.at(3), spring2.at(0));
+
+            float forceSpring1Drum1 = connectionSpring1Drum1.calculateForce(
                 spring1.at(spring1.size() - 1),
-                plate1.get(3, 0)
+                drum1.u.at(4, 4)
             );
-            float f22 = c22.calculateForce(
+
+            float forceSpring2Drum2 = connectionSpring2Drum2.calculateForce(
                 spring2.at(spring2.size() - 1),
-                plate2.get(3, 0)
+                drum2.u.at(4, 4)
             );
 
-            bowedString.addForce(10, f1);
-            bowedString.addForce(10, f2);
+            // Apply all forces
 
-            // printf("%.2f\n", f1);
+            bowedString.addForce(3, forceStringSpring1);
+            bowedString.addForce(3, forceStringSpring2);
 
-            spring1.addForce(0, -f1);
-            spring1.addForce(spring1.size() - 1, 10 * f11);
+            spring1.addForce(0, -forceStringSpring1);
+            spring1.addForce(spring1.size() - 1, forceSpring1Drum1);
 
-            spring2.addForce(0, -f2);
-            spring2.addForce(spring2.size() - 1, 10 * f22);
+            spring2.addForce(0, -forceStringSpring2);
+            spring2.addForce(spring2.size() - 1, 10 * forceSpring2Drum2);
 
-            plate1.addForce(3, 0, -f11);
-            plate2.addForce(3, 0, -f22);
+            drum1.addForce(4, 4, -forceSpring1Drum1);
+            drum2.addForce(4, 4, -forceSpring2Drum2);
+
+            // Update all states
 
             float b = bowedString.getNextSample();
             float s1 = spring1.computeNextSample(0);
             float s2 = spring2.computeNextSample(0);
 
-            plate1.calculate();
-            plate2.calculate();
+            drum1.compute();
+            float d1 = drum1Gain * drum1.u.at(3, 4);
 
+            drum2.compute();
+            float d2 = plate2Gain * drum2.u.at(3, 4);
 
-            float p1 = plate1Gain * plate1.get(2, 0);
-            float p2 = plate2Gain * plate2.get(2, 0);
+            // Write output
 
-            // printf("%f\n", p1);
+            float y[2];
+            float p = 0.8;
+            float c = ab * b;
+            float l = (as1 * s1 + d1);
+            float r = (as2 * s2 + d2);
 
-            float y = a * 1e3 * (ab * b + as1 * s1 + as2 * s2 + p1 + p2);
+            y[0] = c + p * l + (1 - p) * r;
+            y[1] = c + (1 - p) * l + p * r;
             
             for (int c = 0; c < nc; c++)
             {
                 // Write it to the output array here.
-                out[i * nc + c] = y;
+                out[i * nc + c] = a * 1e3 * y[c % 2];
             }
         }
     });
@@ -102,11 +114,11 @@ int main(int argc, char **argv)
     {
         bowedString.drawGui();
 
-        ImGui::Begin("String 1");
+        ImGui::Begin("Spring 1");
         spring1.drawGui();
         ImGui::End();
 
-        ImGui::Begin("String 2");
+        ImGui::Begin("Spring 2");
         spring2.drawGui();
         ImGui::End();
 
@@ -115,18 +127,18 @@ int main(int argc, char **argv)
         ImGui::SliderFloat("String", &stringAmp, -30, 3);
         ImGui::SliderFloat("Spring 1", &springAmp1, -30, 3);
         ImGui::SliderFloat("Spring 2", &springAmp2, -30, 3);
-        plate1Gain.draw();
+        drum1Gain.draw();
         plate2Gain.draw();
         ImGui::SliderFloat("Master", &amp, -30, 3);
         // ImGui::PlotLines("Scope", scope.data(), scope.size(), 0, "", -1, 1, ImVec2(0,80));
         ImGui::End();
 
-        ImGui::Begin("Plate 1");
-        plate1.draw();
+        ImGui::Begin("Drum 1");
+        drum1.drawGui();
         ImGui::End();
 
-        ImGui::Begin("Plate 2");
-        plate2.draw();
+        ImGui::Begin("Drum 2");
+        drum2.drawGui();
         ImGui::End();
 
         ab = powf(10, stringAmp / 10);
