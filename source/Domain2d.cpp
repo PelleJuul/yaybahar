@@ -54,9 +54,24 @@ void Domain2d::prepareClampedBoundaryRight()
     }
 }
 
+float Domain2d::gradientf(int x, int y)
+{
+    return dxf(x, y) + dyf(x, y);
+}
+
+float Domain2d::dxf(int x, int y)
+{
+    return cols * (at(x, y) - at(x + 1, y));
+}
+
 float Domain2d::dxx(int x, int y)
 {
     return cols2 * (at(x - 1, y) - 2 * at(x, y) + at(x + 1, y));
+}
+
+float Domain2d::dyf(int x, int y)
+{
+    return rows * (at(x, y) - at(x, y + 1));
 }
     
 float Domain2d::dyy(int x, int y)

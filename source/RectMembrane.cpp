@@ -47,6 +47,18 @@ void RectMembrane::compute()
         strike = false;
     }
 
+    float sum = 0;
+
+    for (int x = 0; x < u.getNumCols(); x++)
+    {
+        for (int y = 0; y < u.getNumRows(); y++)
+        {
+            sum += u.hr * u.hc * u.gradientf(x, y);
+        }
+    }
+
+    g = 1 + 0.5 * alpha * sum;
+
     c1 = 1.0 / (1.0 + sigma0 * k);
 
     for (int x = 0; x < u.getNumCols(); x++)
@@ -82,7 +94,9 @@ void RectMembrane::calculateDerivedParameters()
 {
     float A = u.getNumCols() / u.getNumRows();
     M = A * h * p;
+    D = E * h / (12 * (1 - nu * nu));
     omega2 = T / M;
+    alpha = (E * A) / T;
 }
 
 void RectMembrane::setTensionFromWavespeed(float wavespeed)
@@ -96,9 +110,9 @@ float RectMembrane::update(int x, int y)
 {
     return c1 *
     (
-        k2 * omega2 * u.laplace(x, y)
+        k2 * omega2 * g * u.laplace(x, y)
       + sigma0 * k * up.at(x, y)
-      // + 2 * sigma1 * k * (u.laplace(x, y) - up.laplace(x, y)))
+      + 2 * sigma1 * k * (u.laplace(x, y) - up.laplace(x, y))
       + 2 * u.at(x, y)
       - up.at(x, y)
       + k2 * f.at(x, y)

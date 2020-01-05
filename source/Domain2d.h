@@ -2,7 +2,7 @@
 
 #include <vector>
 
-class Domain2d
+struct Domain2d
 {
     public:
     Domain2d(int cols, int rows);
@@ -18,9 +18,15 @@ class Domain2d
     void prepareClampedBoundaryLeft();
     void prepareClampedBoundaryRight();
 
+    float dxf(int x, int y);
+
     float dxx(int x, int y);
+
+    float dyf(int x, int y);
     
     float dyy(int x, int y);
+
+    float gradientf(int x, int y);
 
     float laplace(int x, int y);
 
@@ -31,7 +37,6 @@ class Domain2d
         return at(x, y);
     };
 
-    private:
     int cols = 0;
     int rows = 0;
     int cols2 = 0.0;
