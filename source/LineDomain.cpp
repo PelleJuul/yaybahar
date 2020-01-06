@@ -37,14 +37,14 @@ float LineDomain::dxxxx(int l)
 
 void LineDomain::prepareClampedBoundaryLeft()
 {
-    at(-2) = 0;
+    at(-2) = at(0);
     at(-1) = 0;
 }
 
 void LineDomain::prepareClampedBoundaryRight()
 {
     at(L) = 0;
-    at(L+1) = 0;
+    at(L+1) = at(L-1);
 }
 
 void LineDomain::prepareFreeBoundaryLeft()
