@@ -34,7 +34,7 @@ BowedString::BowedString(int L, float fs) :
 void BowedString::calculateDerivedParameters()
 {
     A = M_PI * r * r;
-    alpha = (E * A) / 2;
+    alpha = (E * A) / T;
     M = p * A;
     I = 0.5 * M * r * r;
     kappa2 = (E * I) / M;

@@ -94,9 +94,9 @@ void RectMembrane::calculateDerivedParameters()
 {
     float A = u.getNumCols() / u.getNumRows();
     M = A * h * p;
-    D = E * h / (12 * (1 - nu * nu));
+    D = E * h * h * h / (12 * (1 - nu * nu));
     omega2 = T / M;
-    alpha = (E * A) / T;
+    alpha = ((6 * D) / (T * A * h * h));
 }
 
 void RectMembrane::setTensionFromWavespeed(float wavespeed)
