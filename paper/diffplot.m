@@ -17,15 +17,16 @@ for i = 1:length(x)
    d4(i) = 0.001 * f4(x(i));
 end
 
-%set(0,'defaulttextinterpreter','latex')
-%set(groot,'DefaultAxesTickLabelInterpreter','Tex');
+set(0,'defaulttextinterpreter','latex')
+set(groot,'DefaultAxesTickLabelInterpreter','latex');
 
 plot(x, d1, 'k-', 'LineWidth', 1);
 grid on;
 hold on;
 plot(x, d2, 'k--', 'LineWidth', 1);
 plot(x, d4, 'k:', 'LineWidth', 1);
-legend('u', '10^{-2} u_{xx}', '10^{-3} u_{xxxx}', 'Interpreter','latex', 'Location', 'southoutside', 'Orientation','horizontal');
+l = legend('$u$', '$10^{-2} u_{xx}$', '$10^{-3} u_{xxxx}$', 'Interpreter', 'Latex', 'Location', 'southoutside', 'Orientation','horizontal');
+set(l, 'FontSize', 10);
 hold off;
 
 set(gcf,'position',[0,0,400, 200])
