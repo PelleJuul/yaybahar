@@ -28,7 +28,7 @@
 
 
 %user defined variables
-\def\papertitle{Applied Physical Modeling for Sound Synthesis:\linebreak The Yaybahar}
+\def\papertitle{Applied Physical Modeling for Sound Synthesis: The Yaybahar}
 \def\firstauthor{Pelle Juul Christensen}
 \def\secondauthor{Second author}
 \def\thirdauthor{Third author}
@@ -133,9 +133,9 @@
 %
 \begin{abstract}
 Much work has been done on the theoretical aspects of physical modeling for sound synthesis and lots of models exist that can be combined to form larger acoustical systems.
-In this paper I use those results to model a specific instrument, the Yaybahar, invented by Turkish artist Görkem Şen.
-Each part of the instrument is covered independently and their physics are explained in an intuitive manner.
-I then show how each model can be solved numerically using the method of finite difference schemes, which are reviewed briefly.
+In this paper, I use those results to model a specific instrument, the Yaybahar, invented by Turkish artist Görkem Şen.
+Each part of the instrument is covered independently and their physical behaviour is explained in an intuitive manner.
+I then show how each model can be solved numerically using finite difference schemes (FDSs), which are reviewed briefly.
 The models are implemented in C++ to form an interactive, real-time application, whose architecture and optimization is also discussed.
 \end{abstract}
 %
@@ -144,81 +144,81 @@ The models are implemented in C++ to form an interactive, real-time application,
 \nocite{Someone:00}
 
 The Yaybahar is a novel acoustical instrument invented by Turkish artist Görkem Şen.
-It consists of a string connected to two springs that in turn, respectively, connect to two drum heads.
+It consists of a string connected to two springs that in turn, respectively, connect to two drum heads as seen in Figure \ref{fig:yaybahar}.
 The instrument is played by bowing the string and striking the springs and drums using a mallet.
-The combination of the springs and the drums create a grand, echoey, and reverberant sound that is not found in any other instruments (to my knowledge).
-A video of Görkem Şen can be viewed on YouTube\footnote{\url{https://youtu.be/_aY6TxC1ojA}}.
+The combination of the springs and the drums create a grand, reverberant sound that is unusual for acoustical instruments.
+A video of Görkem Şen playing the Yaybahar can be viewed on YouTube\footnote{\url{https://youtu.be/_aY6TxC1ojA}}.
 
-In this paper we are going to see how to build a real-time sound synthesis algorithm that mimics the Yaybahar by using \textit{physical modeling}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{yaybahar.png}
+    \caption{A screenshot of a video\footnote{https://youtu.be/j_LW-eUYt7Y} of Görkem Şen playing the Yaybahar by bowing the string.}
+    \label{fig:yaybahar}
+\end{figure}
 
-Many methods for physical modeling exists, some of them, such as digital wave guides and modal synthesis, results in great, high quality sounds, but might lack the nuance of the real instrument.
-The method we are going to use is \textit{finite difference schemes} (FDS), which enable us to implement a proper numerical simulation of our instrument.
+This paper presents a real-time sound synthesis algorithm that mimics the Yaybahar by modeling its physical behaviour.
+Many methods for physical modeling exist, some of them, such as digital wave guides \cite{smith1992physical} and modal synthesis \cite{morrison1993mosaic}, result in great, high quality sounds, but might lack the nuance of the real instrument.
+Finite difference (FD) methods on the other hand -- first used in a sound synthesis context by Cadoz \cite{cadoz79} -- are more general and flexible and will allow for a proper numerical simulation of the instrument.
+These methods have their roots in physics simulations, such as fluid dynamics and magnetics, and control theory \textbf{references!!}.
+The application of finite difference schemes (FDSs) -- based on FD methods -- to sound synthesis is also quite mature and a lot of the basic theory can be found in the seminal work by Stefan Bilbao \textit{Numerical Methods for Sound Synthesis}\cite{bilbao_numerical_2009}, on which most of the theory in this paper is based.
 
-Finite difference schemes is a very mature method that has its roots in physics simulations, such as fluid dynamics and magnetics, and control theory.
-The applications of FDS to sound synthesis is also quite mature and a lot of the basic theory can be found in the seminal work by Stefan Bilbao \textit{Numerical Methods for Sound Synthesis}\cite{bilbao_numerical_2009}, on which most of the theory in this paper is based.
-
-Despite its maturity, FDS does not seem to be readily applied to real-time synthesis, probably because they are quite computationally heavy, especially if you want accurate simulations of nonlinear systems.
+Despite its maturity, FDSs have not been readily applied to real-time synthesis, probably because they are quite computationally heavy, especially considering accurate simulations of nonlinear systems.
 One example of a real-time FDS implementation can be found in \cite{willemsen_real-time_2019}, which also covers expressive real-time interaction with the model.
 
-We begin our efforts to simulate the Yaybahar in section \ref{sec:finiteDifferenceSchemes}. where I briefly review the basic concepts of finits difference schemes.
-In section \ref{sec:elements} I go through all the elements of the instrument, show how they can be modeled, discuss their physics, and show how to implement the model using FDS.
-Then, in section \ref{sec:implementation} I give an overview of the architecture of the C++ application the implements the synthesis algorithm and in section \ref{sec:optimizations} I cover the optimizations that were needed to get everything running in real-time.
-Lastly, we have a conclusion in section \ref{sec:conclusion}.
+We begin our efforts to simulate the Yaybahar in Section \ref{sec:finiteDifferenceSchemes}, where I briefly review the basic concepts of FDSs.
+In Section \ref{sec:elements}, we go through all the elements of the instrument, show how they can be modeled, discuss their physics, and show how they can be implemented using FDSs.
+Then, in Section \ref{sec:implementation}, we give an overview of the architecture of the C++ application that implements the synthesis algorithm and cover the optimizations that were needed to get everything running in real-time.
+Lastly, we conclude in Section \ref{sec:conclusion}.
 
 \section{Finite Difference Schemes}
 \label{sec:finiteDifferenceSchemes}
 
-Finite difference schemes is a method for numerically solving differential equations by approximating their contained derivatives.
-
-For example we can approximate a first order derivative using
+FDSs are used to numerically solve differential equations by approximating derivatives. A first order derivative, for example, can be approximated using
 \begin{equation}
   \frac{d}{dx} f(x) \approx \frac{f(x + h) - f(x)}{h}.
 \end{equation}
-As $h$ becomes smaller this approximation gets more precise and in the limit where $h\rightarrow 0$ it is excatly the definition of the first order derivative.
+where $h$ is the spacing between two values of $f$. As $h$ becomes smaller, this approximation gets more precise and in the limit where $h\rightarrow 0$ it is exactly the definition of the first order derivative.
 
-Say that $u = u(t)$ is a function of time, we now introduce the notation $u^n = u(nk)$, where $n$ is the time step and $k = 1/f_s$ sample period given the sample rate $f_s$.
+Say that $u = u(t)$ is a function of time, we now introduce the notation $u^n = u(nk)$, where $n$ is the current time step and $k = 1/f_\text{s}$ is the sample period given the sample rate $f_\text{s}$.
 We can now write our derivative approximation as
 \begin{equation}
   \frac{d}{dt} u \approx \frac{1}{k} (u^{n+1} - u^{n}).
 \end{equation}
-
-For terseness an notational purposes we introduce the following way of writing our approximation:
+For terseness and notational purposes, we introduce the following way of writing our approximation:
 \begin{equation}
   \label{eq:dtf}
   \delta_{t+} u^n = \frac{1}{k} (u^{n+1} - u^{n}).
 \end{equation}
 We call this a \textit{finite difference operator}.
-
 The statement $\delta_{t+}u^n$ should be read as \textit{the finite difference operator $\delta_{t+}$ applied to $u$ at time step $n$.}
 I will introduce the other operators we need as we go along.
 
-In the following sections we will also encounter systems which are defined by functions like $u(x, t)$ and $u(x, y, t)$, where $x$ and $y$ are spatial coordinates.
-For these we can approximate their spatial derivatives by introducing e.g. a variable $h$ so we can write $u^n_l = u(lh, nk)$ or $h_x$ and $h_y$ to write $u^n_{l, m} = u(lh_x, mh_y, nk)$.
-Now, if we want to calculate the approximated derivative of say $u(x, t)$ we would write
+In the following sections we will also encounter distributed systems which are defined by functions like $u(x, t)$ and $u(x, y, t)$, where $x$ and $y$ are spatial coordinates.
+For these we can approximate their spatial derivatives by introducing e.g. a variable $h$ so we can write $u^n_l = u(lh, nk)$ or $h_x$ and $h_y$ to write $u^n_{l, m} = u(lh_x, mh_y, nk)$. For simplicity we will often choose $h_x = h_y$.
+Now, if we want to calculate the approximated derivative of say $u(x, t)$ with respect to $x$, we would write
 \begin{equation}
   \delta_{x+} u^n_l = \frac{1}{h} (u^n_{l+1} - u^n_{l}).
 \end{equation}
-
-A through introduction to finite difference schemes can be found in \cite{bilbao_numerical_2009}, which was also the source for the theory presented here and the FDS related theory of the following sections.
+A thorough introduction to FDSs can be found in \cite{bilbao_numerical_2009}, which was also the source for the theory presented here and the FDS-related theory of the following sections.
 
 \section{Models of the Elements of the Yaybahar}
 \label{sec:elements}
 
-In this section we will go through each element of the Yaybahar, the string, springs, drums, the bow, and the connections between those, and cover their physics and how to simulate them using finite difference schemes.
+In this section we will go through each element of the Yaybahar: the string, springs, drum heads, the bow, and the connections between those, and cover their physics and how to simulate them using FDSs.
 
 \subsection{String}
 \label{sec:string}
 
-To model the string of the instrument we will use the following model
+To model the string of the Yaybahar we will use is based on ones found in \cite[Chapters~6,7, and 8] {bilbao_numerical_2009}, \cite{bilbao_modular_2009}, and \cite{bensa_simulation_2003}.
+It is defined by the partial differential equation
 \begin{align}
   \begin{split}
-  u_{tt} &= \frac{1}{M} \left(T_0 + \frac{E A}{2L} \int u_x^2 dx \right)u_{xx} - \frac{E I}{M} u_{xxxx}\\
-  &- 2 \sigma_0 u_t + 2 \sigma_1 u_{txx} + \frac{1}{M} F
+  u_{tt} &= \frac{1}{\rho A} \left(T_0 + \frac{E A}{2L} \int_0^L u_x^2 dx \right)u_{xx} - \frac{E I}{\rho A} u_{xxxx}\\
+  &- 2 \sigma_0 u_t + 2 \sigma_1 u_{txx} + \frac{1}{\rho A}\sum_f\delta(x-x_f)F_f\ ,
   \end{split}
   \label{eq:stiffNonlinearString}
-\end{align},
-where $u = u(x, t)$ is the displacement of the string at point $x$ and time $t$, $M$ the mass of the string, $T_0$ the tension, $E$ the Young's modulus, $A$ the cross sectional area, $L$ the length, $I$ the moment of inertia of the cross section, $\sigma_0$ dampening, $\sigma_1$ frequency independent dampening, and $F$ external forces.
-This model is based on ones found in \cite[Chapters~6,7, and 8] {bilbao_numerical_2009}, \cite{bilbao_modular_2009}, and \cite{bensa_simulation_2003}.
+\end{align}
+where $u = u(x, t)$ is the displacement of the string at point $x$ and time $t$, $\rho$ is the material density, $A$ is the cross sectional area, $T_0$ is the tension, $E$ is the Young's modulus, $L$ is the length, $I$ is the area moment of inertia, $\sigma_0$ is the frequency dependent damping, $\sigma_1$ is the frequency independent damping, and $F_f$ are external forces localized at positions $x_f$ along the string using spatial Dirac delta function $\delta(x-x_f)$.
 An overview of the parameters and their units can be viewed in Table \ref{table:stringParamters}.
 
 \begin{table}[h]
@@ -226,70 +226,70 @@ An overview of the parameters and their units can be viewed in Table \ref{table:
 \begin{tabularx}{\linewidth}{c | l | c}
   Parameter & Description & Unit \\
   \hline
-  $u$ & Displacement & $m$ \\
-  $M$ & Mass & $kg$ \\
-  $T_0$ & Tension & $N$ \\
-  $E$ & Young's Modulus & $Pa$ \\
-  $A$ & Area & $m^2$ \\
-  $L$ & Length & $m$ \\
-  $I$ & Moment of inertia & $kg \cdot m^2$
+  $u$ & Displacement & m \\
+  $\rho$ & Material Density & kg$\cdot$m$^{-3}$ \\
+  $T_0$ & Tension & N \\
+  $E$ & Young's Modulus & Pa \\
+  $A$ & Area & m$^2$ \\
+  $L$ & Length & m \\
+  $I$ & Area moment of inertia & m$^4$\\
+  $\sigma_0$ & Freq. Indep. Damp. & s$^{-1}$\\
+  $\sigma_1$ & Freq. Dep. Damp. & m$^2 \cdot$s$^{-1}$
 \end{tabularx}
 \label{table:stringParamters}
 \caption{Table of the parameters of Equation (\ref{eq:stiffNonlinearString}).}
 \end{table}
-
-The subscript notation, e.g. $u_{tt}$, is a shorthand for writing derivatives and should be interpreted as
+%
+\noindent The subscript notation, e.g. $u_{tt}$, is a shorthand for writing derivatives and should be interpreted as
 \begin{equation}
-  u_{tt} = \frac{\partial^2}{\partial t^2}u
+  u_{tt} = \frac{\partial^2u}{\partial t^2}.
 \end{equation}
-
-Before proceeding to the discretization of Equation (\ref{eq:stiffNonlinearString}) lets get a feel for what it actually says.
-
-It all begins with Newton's second law of motion
+%
+Before proceeding with the discretization of Equation (\ref{eq:stiffNonlinearString}), let's get a feel for what it actually says.
+It all begins with Newton's second law of motion acting on an infinitesimally small section of the string
 \begin{equation}
-  F = m a \quad \Rightarrow \quad a = \frac{F}{M},
+  F = \rho A a \quad \Rightarrow \quad a = \frac{F}{\rho A},
 \end{equation}
-which says that the acceleration of an object equals the forces applied to it divided by its mass.
+which says that the acceleration $a$ of an object equals the forces $F$ applied to it divided by its mass, which for our tiny segment is $\rho A$.
 This is why we get $u_{tt}$, the acceleration of a point on our string, on the left side.
-All the terms on the right hand side is the forces acting on our string.
+All the terms on the right hand side are the forces acting on our string.
 
 The first term is the force that arises due to the tension of the string.
-We see that this force is determined by $u_{xx}$, the curvature of the string, a result that is arrived at by analysing the tension forces acting on an infinitesmally small section of the string, see e.g. \cite[Chapter~2]{fletcher_physics_1998} or \cite[Chapter~6]{bilbao_numerical_2009}.
+We see that this force is determined by $u_{xx}$, the curvature of the string, a result that is arrived at by analysing the tension forces acting on an infinitesimally small section of the string, see e.g. \cite[Chapter~2]{fletcher_physics_1998} or \cite[Chapter~6]{bilbao_numerical_2009}.
 
 We can get a feel for what this means by looking at Figure \ref{fig:diffplot}. where the solid line is the displacement of the string and $u_{xx}$ is indicated with the dashed line.
-Notice that $u_{xx}$ is somewhat opposite $u$, meaning that the string will be pulled towards the middle, its state of rest, as one would expect.
+Notice that $u_{xx}$ is somewhat opposite of $u$, meaning that the string will be pulled towards the middle, its state of rest, as one would expect.
 
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{diffplot.eps}
   \label{fig:diffplot}
-  \caption{Plot of a string $u = u(t, x)$ (solid line) and its derivative $u_{xx}$ (dashed line), which determines the force due to tension and $u_{xxxx}$ (dotted line), which determines the force due to stiffness.}
+  \caption{Plot of a string $u = u(x,t)$ (solid line) and its derivative $u_{xx}$ (dashed line), which determines the force due to tension and $u_{xxxx}$ (dotted line), which determines the force due to stiffness.}
 \end{figure}
 
-The multiplicative term $T_0 + \frac{E A}{2L} \int u_x^2 dx$ of course involves the tension $T_0$ --- a higher tension will result in a stronger restoring force.
+\noindent The multiplicative term $T_0 + \frac{E A}{2L} \int_0^L u_x^2 dx$ involves the tension $T_0$ and a higher tension will clearly result in a stronger restoring force.
 The integral part can be interpreted as the increase in tension that arises due the the increased length of the string at large displacements\cite[Chapter~5]{fletcher_physics_1998}.
-This give rises to phenomena such as downwards pitch glides which you can experience by plucking e.g. a guitar string very hard.
+This give rises to phenomena such as downwards pitch glides which can be experienced by plucking e.g. a guitar string very hard.
 
 The next term is the one involving $u_{xxxx}$, which is an expression of the force due to the stiffness of the string material.
 A derivation of this can be found in \cite[Chapter~2]{fletcher_physics_1998}.
 Looking at Figure \ref{fig:diffplot}. we see that $u_{xxxx}$ points in the same direction as $u$, notice then the minus in front of the term in equation (\ref{eq:stiffNonlinearString}), which means the stiffness will somewhat counteract the displacement of the string (but not in the same way as the tension).
-Stiffness causes dispersion which gives rise to inharmonic overtones, which can be observed in e.g. a piano string or metal rods.
+Stiffness causes dispersion which gives rise to inharmonic overtones, which can be observed in e.g. a thick piano string or metal rods.
 
-The term $-2 \sigma_0 u_t$ causes dampening of the system that, greatly simplified, occurs due to viscous air flow, internal friction, and radiated energy\cite[Chapter~2]{fletcher_physics_1998}. 
-$u_t$ is the velocity of $u$, and is a vector pointing in the direction $u$ is currently $moving$, so adding a force opposite of this will intuitively cause dampening.
-Higher velocities will cause a stronger dampening force which results in a exponential decrease in volume over time.
+The term $-2 \sigma_0 u_t$ causes damping of the system that, greatly simplified, occurs due to viscous air flow, internal friction, and radiated energy\cite[Chapter~2]{fletcher_physics_1998}. 
+$u_t$ is the velocity of $u$, and is a vector pointing in the direction that $u$ is currently moving. Thus, adding a force opposite of this will intuitively cause damping.
+Higher velocities will cause a stronger damping force which results in a exponential decrease in volume over time.
 
-The term $2 \sigma_1 u_{txx}$ causes frequency dependent dampening of the string.
+The term $2 \sigma_1 u_{txx}$ causes frequency dependent damping of the string.
 This addition does not really have any physical justification, but causes the correct perceptual phenomena of higher frequencies dying out more quickly\cite{bensa_simulation_2003}.
-The part $u_{txx}$, the change in curvature over time, is less easy to understand intuitively and I have so far not found a good explanation of exactly why it works.
 
 Proceeding with the discretization of Equation (\ref{eq:stiffNonlinearString}), we replace the derivative operators with suitable finite difference operators to get
 \begin{align}
   \begin{split}
-    \delta_{tt} u^n_l &= \frac{1}{M} \left(T_0 + \sum^{i-1}_{i=0} (\delta_{x+} u^n_i)^2 \right)\delta_{xx} u^n_l - \frac{E I}{M} \delta_{xxxx} u^n_l\\
-    &- 2 \sigma_0 \delta_{t\cdot} u^n_l + 2 \sigma_1 \delta_{t-} \delta_{xx}u^n_l + \frac{1}{M} F.
+    \delta_{tt} u^n_l &= \frac{1}{\rho A} \left(T_0 + \sum^{i-1}_{i=0} (\delta_{x+} u^n_i)^2 \right)\delta_{xx}u^n_l - \frac{E I}{\rho A} \delta_{xxxx} u^n_l\\
+    &- 2 \sigma_0 \delta_{t\cdot} u^n_l + 2 \sigma_1 \delta_{t-} \delta_{xx}u^n_l + \frac{1}{\rho A} \sum_fJ_l(x_f)F_f,
   \end{split}
 \end{align}
-
+where $J_l(x_f)$ is a spreading operator distributing forces $F_f$ at position $x_f$ along the string (and scaling it by $1/h$) \cite[Chapter 5]{bilbao_numerical_2009}.
 The new finite difference operators are defined as
 % at(l+2) - 4 * at(l+1) + 6 * at(l) - 4 * at(l-1) + at(l-2)
 \begin{align}
@@ -305,37 +305,36 @@ which approxmiates $u_{xxxx}$, and
   \delta_{t\cdot} &= \frac{1}{2k} (u^{n+1}_l - u^{n-1}_l) \\
   \delta_{t-} &=\frac{1}{k} (u^{n}_l - u^{n-1}_l)
 \end{align}
-that are both approximations of $u_t$
-
-To actually compute the solution of our string model we must derive an \textit{update rule} or \textit{recurrence equation}, which will allow us to compute the state at the next time step $u^{n+1}_l$ from the current and past states.
-
-We do this by expanding all operators that contains $u^{n+1}_l$ and then proceed isolate $u^{n+1}_l$ to get
+which are both approximations of $u_t$. To compute the solution of our string model we must derive an \textit{update rule} or \textit{recurrence equation}, which will allow us to compute the state at the next time step $u^{n+1}_l$ from the current and past states.
+We do this by expanding all operators that contain $u^{n+1}_l$ and then proceed isolate $u^{n+1}_l$ to get
 \begin{align}
   \label{eq:stringUpdate}
-  u^{n+1}_l &= \frac{1}{1 + k\sigma_0} (F_t + F_s + F_d + F_e + 2u^n_l - u^{n-1}_l)
+  u^{n+1}_l &= \frac{1}{1 + k\sigma_0} (F_\text{t} + F_\text{s} + F_\text{d} + F_\text{e} + 2u^n_l - u^{n-1}_l)
 \end{align}
 where
 \begin{align}
-  F_t &= \frac{k^2}{M} \left(T_0 + \sum^{L-1}_{i=0} h(\delta_{x+} u^n_i)^2 \right)\delta_{xx} \\
-  F_s &= -\frac{k^2 E I}{M} \delta_{xxxx} u^n_l\\
-  F_d &= k\sigma_0u^{n-1}_l + 2k\sigma_1 (\delta_{xx}u^n_l - \delta_{xx}u^{n-1}_l)\\
-  F_e &= \frac{k^2}{M}F.
+  F_\text{t} &= \frac{k^2}{\rho A} \left(T_0 + \sum^{N-1}_{i=0} h(\delta_{x+} u^n_i)^2 \right)\delta_{xx}u_l^n \\
+  F_\text{s} &= -\frac{k^2 E I}{\rho A} \delta_{xxxx} u^n_l\\
+  F_\text{d} &= k\sigma_0u^{n-1}_l + 2k\sigma_1 (\delta_{xx}u^n_l - \delta_{xx}u^{n-1}_l)\\
+  F_\text{e} &= \frac{k^2}{\rho A}\sum_fJ_l(x_f)F_f.
 \end{align}
-Notice we did not expand the spatial difference operators because the have no influence on the isolation of $u^{n+1}_l$, though could perhaps expand them and reduce the above equation to fewer operations, but I tend to prefer clarity over brevity.
+Notice that we did not expand the spatial difference operators because they have no influence on the isolation of $u^{n+1}_l$.
+% One could perhaps expand them and reduce the above equation to fewer operations, but I tend to prefer clarity over brevity.
 
-Since our string should not be infinite it needs to end somewhere.
-We will need to choose an integer $N$, which is the number of points on our string, each spaced by $h$.
-Assuming that the length of our string is $1m$ we have $N = 1 / h$.
+For implementation purposes we will need to bound the domain of our string.
+We will need to choose an integer $N$ to be the number of points on our string, evenly spaced by $h$.
+Assuming that the length of our string is $L = 1$ we have $N = 1 / h$.
 
 Special care needs to be taken at the boundaries --- the points $l=0$ and $l=N-1$.
 There are multiple ways of doing this depending on what behavior we want.
 We will be using a clamped boundary condition, which means that the points at each end must satisfy\cite[Chapter~7]{bilbao_numerical_2009}
 \begin{equation}
+\label{eq:clampedBoundary}
   u = u_x = 0,
 \end{equation}
 which can be implemented by introducing some \textit{virtual points} at positions $-2, -1, N$ and $N+1$.
 
-To ensure the condition $u = 0$ we choose
+To implement $u = 0$ in Equation \eqref{eq:clampedBoundary} at the boundaries we choose
 \begin{equation}
   u_{-1} = u_{N} = 0.
 \end{equation}
@@ -355,49 +354,50 @@ The same can be done for $u^n_N$ which results in $u^n_{N+1} = u^n_{N-1}$.
 \subsection{Spring}
 \label{sec:spring}
 
-The springs which connect the string to the drum membranes is modeled with
+The springs which connect the string to the drum membranes is modeled with \textbf{reference?}
 \begin{align}
   \begin{split}
-  u_{xx} &= -\kappa^2 u_{xxxx} \\
-  & - 2 \sigma_0 u_t + 2 \sigma_1 u_{txx} + \frac{1}{M} F.
+  u_{tt} &= -\kappa^2 u_{xxxx}- 2 \sigma_0 u_t + 2 \sigma_1 u_{txx} \\
+  & + \delta(x-x_\text{f})\frac{1}{\rho A} F.
   \end{split}
   \label{eq:spring}
 \end{align}
-In this model $\kappa$ is a constant usually determined by scale, Young's modulus and moment of inertia of the material, but in this case unitless and corresponds roughly to pitch or echoes per second\cite{bilbao_modular_2009}\cite{parker_modeling_2010}.
-$M$ is the mass of the spring, which we can choose independently of $\kappa$.
+In this model $\kappa$ is a constant usually determined by scale, Young's modulus and moment of inertia of the material, however we will use it as a dimensionless free parameter that determine the dispersive behaviour of the spring\cite{bilbao_modular_2009}\cite{parker_modeling_2010}.
+%$M$ is the mass of the spring, which we in this case can choose independently of $\kappa$.
 
-The informed reader will notice that Equation (\ref{eq:spring}) is actually the equation for the dynamics of a linear stiff bar\cite{bilbao_modular_2009}\cite[7]{bilbao_numerical_2009}.
+The informed reader will notice that Equation (\ref{eq:spring}) is actually the equation for the dynamics of a linear stiff bar\cite{bilbao_modular_2009}\cite[Chapter~7]{bilbao_numerical_2009}.
 However, it was also used by Parker, Penttinen, and Bilbao to model wave propagation on a slinky --- a long, large diameter spring --- so it should be suitable for modeling the springs of the Yaybahar as well\cite{parker_modeling_2010}.
+Other more accurate models of springs have been developed, see e.g. \cite{parker_spring_2009}, but the one used here has the benefit of simplicity and ease of implementation for real-time purposes.
 
-There is no need to go over the terms of Equation (\ref{eq:spring}), because we have already seen all the terms before in Equation (\ref{eq:stiffNonlinearString}) and explained them in section \ref{sec:string}.
+There is no need to go over the terms of Equation (\ref{eq:spring}), because we have already seen all the terms before in Equation (\ref{eq:stiffNonlinearString}) and explained them in Section \ref{sec:string}.
 We should note though that there is no force due to tension, because the only restoring force in the spring is the material stiffness.
 
 We discretize Equation (\ref{eq:spring}) by applying the suitable difference operators to get
 \begin{equation}
   \begin{split}
-  \delta_{xx} u^n_l &= -\kappa^2 \delta_{xxxx} u^n_l\\
-  &- 2 \sigma_0 \delta_{t\cdot} u^n_l + 2 \sigma_1 \delta_{t-} \delta_{xx}u^n_l + \frac{1}{M} F.
+  \delta_{xx} u^n_l &= -\kappa^2 \delta_{xxxx} u^n_l- 2 \sigma_0 \delta_{t\cdot} u^n_l + 2 \sigma_1 \delta_{t-} \delta_{xx}u^n_l\\
+  & + J(x_\text{f})\frac{1}{\rho A} F.
   \end{split}
 \end{equation}
 Then, expanding the operators and isolating $u^{n+1}_l$ we get
 \begin{equation}
-u^{n+1}_l = \frac{1}{1 + k\sigma_0} (F_s + F_d + F_e + 2u^n_l - u^{n-1}_l)
+u^{n+1}_l = \frac{1}{1 + k\sigma_0} (F_\text{s} + F_\text{d} + F_\text{e} + 2u^n_l - u^{n-1}_l)
 \end{equation}
 where
 \begin{align}
-  F_s &= -k^2 \kappa^2 \delta_{xxxx} u^n_l\\
-  F_d &= k\sigma_0u^{n-1}_l + 2k\sigma_1 (\delta_{xx}u^n_l - \delta_{xx}u^{n-1}_l)\\
-  F_e &= \frac{k^2}{M}F.
+  F_\text{s} &= -k^2 \kappa^2 \delta_{xxxx} u^n_l\\
+  F_\text{d} &= k\sigma_0u^{n-1}_l + 2k\sigma_1 (\delta_{xx}u^n_l - \delta_{xx}u^{n-1}_l)\\
+  F_\text{e} &= J(x_\text{f})\frac{k^2}{\rho A}F.
 \end{align}
-
-At each end a spring is attached either to the string or to a drum head.
-We will model this by using free boundary conditions and the connections covered in section \ref{sec:connections}.
-Free boundary conditions means that at either end of the spring we must satisfy
+%
+At each end, a spring is attached either to the string or to a drum head.
+We will model this by using free boundary conditions and the connections covered in Section \ref{sec:connections}.
+Free boundary conditions mean that at either end of the spring we must satisfy \cite{bilbao_numerical_2009}
 \begin{equation}
   \label{eq:freeBoundaryCondition}
   u_{xx} = u_{xxx} = 0.
 \end{equation}
-
+%
 This is implemented by first discretizing Equation (\ref{eq:freeBoundaryCondition}) using finite difference operators to get
 \begin{equation}
   \label{eq:discretizedFreeBoundaryCondition}
@@ -428,20 +428,19 @@ where $N$ is the number of points on our spring.
 \subsection{Membrane}
 \label{sec:membrane}
 The drum heads of the Yaybahar can be modeled as two membranes under tension.
-The equation for this is
+The equation for this is built from the 2D wave equation with added dampening and a nonlinearity in the tension term based on the Berger plate model\cite[Chapter~11]{bilbao_numerical_2009}\cite[Chapter~13]{bilbao_numerical_2009}
 \begin{align}
   \label{eq:nonlinearMembrane}
   \begin{split}
-  u_{tt} &= \frac{1}{M} \left(T_0 + \frac{6D}{A H^2} \iint_A \nabla u^2 dA \right)\Delta u \\
-  &- 2 \sigma_0 u_t + 2 \sigma_1 \Delta u_t + \frac{1}{M} F.
+  u_{tt} &= \frac{1}{\rho H} \left(T_0 + \frac{6D}{A H^2} \iint_\mathcal{D} |\nabla u|^2 dxdy \right)\Delta u \\
+  &- 2 \sigma_0 u_t + 2 \sigma_1 \Delta u_t + \delta(x-x_\text{f}, y-y_\text{f})\frac{1}{\rho H} F.
   \end{split}
 \end{align}
-where we have the displacement $u = u(x, y, t)$; $H$ is the thickness of the material, and $A$ is the surface area.
-The parameter $D$ is defined by
+where we have the displacement $u = u(x, y, t)$; $H$ is the thickness of the material, $A$ is the surface area, and $\delta(x-x_\text{f},y-y_\text{f}))$ is the (2D) spatial Dirac delta function localizing force $F$ at coordinate $(x_\text{f},y_\text{f})$. Furthermore, $\mathcal{D} \in [0,L_x]\times[0,L_y]$ describes the domain of the membrane with membrane width $L_x$ and height $L_y$. The parameter $D$ is defined by
 \begin{align}
   D = \frac{E H^3}{12 (1 - \nu^2)},
 \end{align}
-which is called the \textit{flextural regidity} of the membrane. Again, $E$ is the Young's modulus of the material and $\nu$ is Poisson's ratio, which determines how the material deforms under strain.
+which is the \textit{flextural regidity} of the membrane. Again, $E$ is the Young's modulus of the material and $\nu$ is Poisson's ratio, which determines how the material deforms under strain.
 The model in Equation (\ref{eq:nonlinearMembrane}) is based on the 2D wave equation and nonlinear plate vibration covered in \cite[Chapters~11, 12, and 13]{bilbao_numerical_2009}.
 
 You might have noticed that Equation (\ref{eq:nonlinearMembrane}) is very similar to (\ref{eq:stiffNonlinearString}) except now in two dimensions.
@@ -454,181 +453,185 @@ This is why we have the gradient, defined as
 \begin{equation}
   \nabla u = u_x + u_y,
 \end{equation}
-and the laplacian, defined as
+and the Laplacian, defined as
 \begin{equation}
   \Delta u = u_{xx} + u_{yy}.
 \end{equation}
-
-At this point we are assuming cartesian coordinates, however, since the drums of the Yaybahar are round, we might also want to make the domain of our model round.
+At this point we are assuming cartesian coordinates, however, since the drum heads of the Yaybahar are round, we might also want to make the domain of our model circular.
 This can be done by expressing positions radial coordinates, radius $r$ and angle $\theta$, instead of $x$ and $y$.
 By expressing our cartesian coordinates using our radial ones
 \begin{align}
   x &= r \cos \theta\\
   y &= r \sin \theta,
 \end{align}
-we can transform our derivatives into radial coordinates as well.
-E.g. we can show the laplacian in radial coordinates is
+we can transform our derivatives into radial coordinates as well, i.e., we can show that the Laplacian in radial coordinates is
 \begin{equation}
   \Delta u = u_{rr} + \frac{1}{r} u_{rr} + \frac{1}{r^2} u_{\theta \theta}.
 \end{equation}
 
-However, we are not going to do this because finite difference schemes in radial coordinates, especially the efficient, \textit{implicit} ones, have a tendency to misbehave \cite[Chapter~12]{bilbao_numerical_2009}.
-The main problem for our case is that the sound will be severely band limited, which will kill the tone of our assembled Yaybahar model, so we will stay in cartesian coordinates.
+However, this method has not been pursued as finite difference schemes in radial coordinates, especially the efficient, \textit{explicit} ones, have a tendency to misbehave \cite[Chapter~12]{bilbao_numerical_2009}.
+The main problem in our case is that the sound will be severely band limited, which will kill the tone of our assembled Yaybahar model, so we will stay in cartesian coordinates.
 
 Equation (\ref{eq:nonlinearMembrane}) can be discretized like this
 \begin{align}
   \label{eq:nonlinearMembraneFds}
   \begin{split}
-  \delta_tt u^n_{l, m} &= \frac{1}{M} \left(T_0 + \frac{6D}{A H^2} \sum_{x, y} h_x h_y (\delta_\nabla u^n_{l, m})^2 \right)\delta_\Delta u^n_{l, m} \\
-  &- 2 \sigma_0 \delta_{t\cdot} u^n_{l, m} + 2 \sigma_1 \delta_\Delta \delta_{t-} u^n_{l, m} + \frac{1}{M} F.
+  \delta_{tt} u^n_{l, m} &= \frac{1}{\rho H} \left(T_0 + \frac{6D}{|\mathcal{D}| H^2} \sum_{l=0}^{N_x-1}\sum_{m=0}^{N_y-1} h_x h_y (\delta_\nabla u^n_{l, m})^2 \right)\\
+  &\cdot\delta_\Delta u^n_{l, m}- 2 \sigma_0 \delta_{t\cdot} u^n_{l, m} + 2 \sigma_1 \delta_\Delta \delta_{t-} u^n_{l, m}\\
+  &+J_{l,m}(x_f,y_f)\frac{1}{\rho H} F,
   \end{split}
 \end{align}
-using the definitions
+where $J(x_\text{f},y_\text{f})$ is a (2D) spreading operator distributing force $F$ at position $(x_\text{f},y_\text{f})$ on the plate (and scaling it by $1/h^2$), and $N_x = 1/h_x$ and $N_y=1/h_y$ are the number of horizontal and vertical points of the discrete membrane respectively. Using the definitions
 \begin{align}
-  \delta_\nabla u^n_{l, m} &= \delta_{xx} u^n_{l, m} + \delta_{yy} u^n_{l, m}\\
-  \delta_\Delta u^n_{l, m} &= \delta_{x+} u^n_{l, m} + \delta_{y+} u^n_{l, m}
+  \delta_\Delta u^n_{l, m} &= \delta_{xx} u^n_{l, m} + \delta_{yy} u^n_{l, m}\\
+  \delta_\nabla u^n_{l, m} &= \delta_{x+} u^n_{l, m} + \delta_{y+} u^n_{l, m}
 \end{align}
-
+%
 Expanding the operators in Equation (\ref{eq:nonlinearMembraneFds}) and solving for $u^{n+1}_{l, m}$ we get 
 \begin{align}
-  u^{n+1}_{l, m} = \frac{1}{1 + k\sigma_0} (F_s + F_d + F_e + 2 u^n_{l, m} - u^{n-1}_{l, m})
+  u^{n+1}_{l, m} = \frac{1}{1 + k\sigma_0} (F_\text{s} + F_\text{d} + F_\text{e} + 2 u^n_{l, m} - u^{n-1}_{l, m})
 \end{align}
 where
 \begin{align}
-  F_s &= k^2 \frac{1}{M} \left(T_0 + \frac{6D}{A H^2} \sum_{x, y} h_x h_y(\delta_\nabla u^n_{l, m})^2 \right)\delta_\Delta u^n_{l, m} \\
-  F_d &= k \sigma_0 u^{n-1}_{l, m} + 2 k \sigma_1 (\delta_\Delta u^{n+1}_{l, m} - \delta_\Delta u^{n-1}_{l, m}) \\
-  F_e &= \frac{k^2}{M} F
+\begin{aligned}
+&F_\text{s} \\
+&
+\end{aligned}
+&\begin{aligned}
+  &= \frac{k^2}{\rho H} \left(T_0 + \frac{6D}{A H^2} \sum_{l=0}^{N_x-1}\sum_{m=0}^{N_y-1} h_x h_y(\delta_\nabla u^n_{l, m})^2 \right)\\
+  &\cdot\delta_\Delta u^n_{l, m} 
+  \end{aligned}\\
+  F_\text{d} &= k \sigma_0 u^{n-1}_{l, m} + 2 k \sigma_1 (\delta_\Delta u^{n}_{l, m} - \delta_\Delta u^{n-1}_{l, m}) \\
+  F_\text{e} &= J(x_\text{f}, y_\text{f})\frac{k^2}{\rho H} F
 \end{align}
-
+%
 As for boundary conditions, we now have the four edges around our membrane we need to take care of\footnote{Even though we are using cartesian coordinates the shape of our membrane does not need to be rectangular, but for now that is what we choose it to be.}.
 Like with the string we will use a clamped boundary conditions which means that we define virtual points
 \begin{equation}
-  u^{n+1}_{l, m} = 0,
+  u = \nabla u= 0,
 \end{equation}
-along all edges, that is, when $l = -1$, $l = N_x$, $m = -1$, or $m = N_y$, where $N_x$ and $N_y$ are the number of points in each direction.
+along all edges, that is, when $l = -1$, $l = N_x$, $m = -1$, or $m = N_y$.
 
 \subsection{Bow}
 \label{sec:bow}
 
-A bow, like the one used to play the Yaybahar, works by the friction between the bow hairs and the resonater being played, in this case a string.
-At first the bow will pull the string along, but at some point the restoring force in the string becomes too large and the string shoots back only to be caught by the bow again \cite[Chapter~2]{fletcher_physics_1998}.
+A bow, like the one used to play the Yaybahar, works by the friction between the bow hairs and the resonator being played, in this case a string.
+At first, the bow will pull the string along, but at some point, the restoring force in the string becomes too large and the string shoots back only to be caught by the bow again \cite[Chapter~2]{fletcher_physics_1998}.
 The frictional force between the bow and the string is determined in part by the relative velocity between them.
 
 We model this by using the model from \cite[Chapter~4]{bilbao_numerical_2009}, where we apply a force $F$ to our system in Equation (\ref{eq:stiffNonlinearString}) that is determined by
 \begin{equation}
   \label{eq:bowForce}
-  F = - F_b \phi(v_{rel}),
+  F = - F_\text{b} \phi(v_\text{rel}),
 \end{equation}
 where
 \begin{equation}
-  v_{rel} = u_t - v_b.
+  v_\text{rel} = u_t - v_\text{b}.
 \end{equation}
-Here $F_b$ is the force in Newtons at which the bow is pressed down onto the string, $v_{rel}$ is the relative velocity of the bow to the string at the bowing point with $v_b$ being the bow velocity in $m/s$.
+Here $F_\text{b} = F_\text{b}(t)$ is the force in Newtons at which the bow is pressed down onto the string, $v_\text{rel} = v_\text{rel}(t)$ is the relative velocity of the bow to the string at the bowing point with $v_\text{b} = v_\text{b}(t)$ being the bow velocity in m/s.
 
-There are many ways of defining $\phi$, but we will be using the definition
+There are many ways of defining the dimensionless friction characteristic $\phi$, but we will be using the definition
 \begin{equation}
   \label{eq:phi}
-  \phi(v_{rel}) = \sqrt{2a} v_{rel} e^{-a v_{rel}^2 + 1/2},
+  \phi(v_\text{rel}) = \sqrt{2a} v_\text{rel} e^{-a v_\text{rel}^2 + 1/2},
 \end{equation}
 where $a$ is a dimensionless constant that determines the shape of the function.
-A plot of $\phi(v_{rel})$ can be seen in Figure \ref{fig:bowplot}.
+A plot of $\phi(v_\text{rel})$ can be seen in Figure \ref{fig:bowplot}.
 
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{bowplot.eps}
   \label{fig:bowplot}
-  \caption{A plot of $\phi(v_{rel})$ of Equation (\ref{eq:phi}) with $a = 20$}
+  \caption{A plot of $\phi(v_\text{rel})$ of Equation (\ref{eq:phi}) with $a = 20$}
 \end{figure}
-
-To implement our bow model we must discretize Equation (\ref{eq:bowForce}), which means discretizing $v_{rel}$.
+%
+\noindent To implement our bow model we must discretize Equation (\ref{eq:bowForce}), which means discretizing $v_\text{rel}$.
 We will do this using the scheme
 \begin{equation}
   \label{eq:vrelScheme}
-  v_{rel} = \delta_{t\cdot} u^n_{l_b} - v_b,
+  v_\text{rel}^n = \delta_{t\cdot} u^n_{l_\text{b}} - v_\text{b}^n,
 \end{equation}
-where $l_b$ is the index of our bowing point.
+where $l_\text{b}$ is the index of our bowing point.
 
 If we expand Equation (\ref{eq:vrelScheme}) we get
 \begin{equation}
   \label{eq:vrelSchemeExpanded}
-  v_{rel} = \frac{1}{2k}\left(u^{n+1}_{l_b} - u^{n-1}_{l_b}\right) - v_b.
+  v_\text{rel}^n = \frac{1}{2k}\left(u^{n+1}_{l_\text{b}} - u^{n-1}_{l_\text{b}}\right) - v_\text{b}^n.
 \end{equation}
-Notice that $v_{rel}$ depends on $u^{n+1}_{l_b}$, but to compute $u^{n+1}_{l_b}$ using Equation (\ref{eq:stiffNonlinearString}) combined with Equation (\ref{eq:vrelScheme}) we need $v_{rel}$.
-This cyclic dependency results in what we call an \textit{explicit} scheme which we can only solve using \textit{iterative methods}.
-
+Notice that $v_\text{rel}^n$ depends on $u^{n+1}_{l_\text{b}}$, but to compute $u^{n+1}_{l_\text{b}}$ using Equation (\ref{eq:stiffNonlinearString}) combined with Equation (\ref{eq:vrelScheme}) we need $v_\text{rel}^n$.
+This cyclic dependency results in what we call an \textit{implicit} scheme which we can only solve using \textit{iterative methods}.
+%
 One such method is the Newton-Raphson method which says that if we have a function $f(x) = 0$, then we can get continuously better results for $x$ by iteratively doing
 \begin{equation}
-  x \leftarrow x - \frac{f(x)}{f_x(x)},
+  x^{i+1} = x^i - \frac{f(x^i)}{f'(x^i)},
 \end{equation}
-where we keep going until the change in $x$ is sufficiently small.
+with iteration number $i$ and $f'(x) = df(x)/dx$, where we keep going until the change between $x^{i+1}$ and $x^i$ is sufficiently small.
 
 We apply this by first putting Equation (\ref{eq:vrelSchemeExpanded}) into the correct from
 \begin{equation}
-  f(v_{rel}) = \frac{1}{2k} \left(u^{n+1}_{l_b} - u^{n-1}_{l_b} \right) - v_b - v_{rel} = 0.
+  f((v_\text{rel}^n)^i) = \frac{1}{2k} \left(u^{n+1}_{l_\text{b}} - u^{n-1}_{l_\text{b}} \right) - v_\text{b} - (v_\text{rel}^n)^i = 0.
 \end{equation}
-Then we substitute $u^{n+1}_{l_b}$ using Equation (\ref{eq:stringUpdate}) and take the derivative of it all with respect to $v_{rel}$ to get
+Then we substitute $u^{n+1}_{l_\text{b}}$ using Equation (\ref{eq:stringUpdate}) and take the derivative of it all with respect to $v_\text{rel}^n$ to get
 \begin{equation}
-  f_{v_{rel}}(v_{rel}) = - \frac{1}{2k} k^2 F_b \phi_{v_{rel}}(v_{rel}) - 1.
+  f'(v_\text{rel}^n) = - \frac{1}{2k} k^2 F_\text{b} \phi'(v_\text{rel}^n) - 1.
 \end{equation}
 where
 % sqrt2a * (exp(-a * pow2(eta) + 0.5) - 2 * a * pow2(eta) * exp(-a * pow2(eta) + 0.5))
 \begin{equation}
-  \phi_{v_{rel}}(v_{rel}) = \sqrt{2 a} \left(e^{-a v_{rel}^2 + 1/2} - 2 a v_{rel}^2 e^{-a v_{rel}^2 + 1/2} \right).
+  \phi'(v_\text{rel}^n) = \sqrt{2 a} \left(e^{-a (v_\text{rel}^n)^2 + 1/2} - 2 a (v_\text{rel}^n)^2 e^{-a (v_\text{rel}^n)^2 + 1/2} \right).
 \end{equation}
-And thus, we have everything we need to iteratively compute $v_{rel}$.
+And thus, we have everything we need to iteratively compute $v_\text{rel}^n$.
 
 Note that iterative methods can have a large impact on the efficiency of our synthesis algorithm --- not great for the prospect of having it run in real-time.
-In the current case, however, it is not too bad since we only need to run the solver for the bowing point $l_b$ and not for every point on our string.
+In the current case, however, it is not too bad since we only need to run the solver for the bowing point $l_\text{b}$ and not for every point on our string.
 
 \subsection{Connections}
 \label{sec:connections}
 
 To connect the elements of our Yaybahar we will use a simple spring-like connection.
-Say that e.g. $u^n_{l_{uc}}$ is the connecting point on our string and $w^n_{l_{wc}}$ is the connecting point on one of the springs.
+Say that e.g. $u^n_{l_\text{uc}}$ is the connecting point on our string and $w^n_{l_\text{wc}}$ is the connecting point on one of the springs.
 The force caused by the connection between them is defined by
 \begin{equation}
-  F_c = k \left(u^n_{l_{uc}} - w^n_{l_{wc}}\right),
+  F_\text{c} = K \left(u^n_{l_\text{uc}} - w^n_{l_\text{wc}}\right),
 \end{equation}
-where $k$ is a positive constant determining the strength of the connection.
+where $K$ is a positive constant determining the strength of the connection. This connection scheme is basically Hooke's law, but similar to e.g. the one found in \cite{bilbao_modular_2009}, where they also include nonlinear terms.
 
-This connection scheme is basically just Hooke's law, but similar the e.g. the one found in \cite{bilbao_modular_2009}, where they also include non-linear terms.
-
-After computing the connection force $F_c$ we simply apply it to our string and spring, but in opposite directions, so the string gets $F_c$ and the spring gets $-F_c$ added to their respective $F$ (external forces) in Equations (\ref{eq:stiffNonlinearString}) and (\ref{eq:spring}).
+After computing the connection force $F_\text{c}$ we simply apply it to our string and spring, but in opposite directions, so if $F_\text{c}$ is applied to the string, then $-F_\text{c}$ is applied to the spring and added to their respective $F$ (external forces) in Equations (\ref{eq:stiffNonlinearString}) and (\ref{eq:spring}).
 
 \section{Implementation}
 \label{sec:implementation}
 
-Everything covered in section \ref{sec:elements}. is implement in C++ and the code is available on GitHub\footnote{\url{https://github.com/pellejuul/yaybahar}, latest commit at time of writing: 039bf85}.
-This section covers how the code is structured and which optimization were applied to make it run in real-time.
+Everything covered in Section \ref{sec:elements}. is implemented in C++ and the code is available on GitHub\footnote{\url{https://github.com/pellejuul/yaybahar}, latest commit at time of writing: 039bf85}.
+This section covers how the code is structured and which optimizations were applied to make it run in real-time.
 
 \subsection{Code Structure}
 
 The code is structured in three layers of abstraction: domains, models, and application code.
 
 Domains implement the low level details that are common for multiple models.
-This encompasses arrays for holding models states, computation of boundary conditions, and routines for the various finite difference operators.
+This encompasses arrays for storing model states, computation of boundary conditions, and routines for the various finite difference operators.
 The following domain classes are implemented
 \begin{description}
   \item[Domain1d] a 1D domain used for the string and spring models.
   \item[Domain2d] a cartesian 2D domain used for the drum membrane models. 
   \item[Domain2dRadial] a radial 2D domain used in an earlier round membrane model.
 \end{description}
-
-The model layer uses the domain layer to implement the models of section \ref{sec:elements}.
+%
+The model layer uses the domain layer to implement the models of Section \ref{sec:elements}.
 Using the domain classes allows the developer to focus on the high level aspects of the model without getting bogged down by e.g. the implementation of the finite difference operators.
 The model classes implemented are
 \begin{description}
-  \item[BowedString] the string model from section \ref{sec:string}. combined with the bow model from section \ref{sec:bow}. using Domain1d.
-  \item[Connection] the connection model from section \ref{sec:connections}.
-  \item[RectMembrane] the membrane model from section \ref{sec:membrane}. using Domain2d.
-  \item[Spring] the spring model of section\ref{sec:spring}.
+  \item[BowedString] the string model from Section \ref{sec:string} combined with the bow model from Section \ref{sec:bow} using Domain1d.
+  \item[Connection] the connection model from Section \ref{sec:connections}.
+  \item[RectMembrane] the membrane model from Section \ref{sec:membrane} using Domain2d.
+  \item[Spring] the spring model of Section \ref{sec:spring}.
 \end{description}
-
+%
 The application code ties all the model classes together using the connection class, provides real-time audio output, and a GUI for controlling the relevant parameters of each model.
 
 \subsection{Optimizations}
 \label{sec:optimizations}
 
-To make the full Yaybahar run in real-time the code needed to be optimized.
+To make the full Yaybahar run in real-time, the code needed to be optimized.
 Three categories of optimizations were applied:
 \begin{enumerate}
   \item Only compute what is needed.
@@ -637,16 +640,16 @@ Three categories of optimizations were applied:
   \item Avoid memory allocation and copying.
   \item Compile with optimizations enabled (clang flag -O3).
 \end{enumerate}
-
-An example of optimization 1. can be found in the BowedString class, where we only need to iteratively compute $v_{rel}$ once.
-We also avoid calling the routine for $\phi(v_{rel})$ unless necessary.
+%
+An example of optimization 1. can be found in the BowedString class, where we only need to iteratively compute $v_\text{rel}$ at point $l_\text{b}$, not for every point along the string.
+% We also avoid calling the routine for $\phi(v_\text{rel})$ unless necessary.
 
 For optimization 2. we want to focus on constant terms that contain divisions or non-arithmetic functions, such as exponentials and square roots, since these take many clock cycles to compute.
-Obvious targets for this is the term $1 / (1 + k\sigma_0)$ which appears multiple places, or $\sqrt{2a}$ in the bow model.
+Obvious targets for this are the term $1 / (1 + k\sigma_0)$, which appears in multiple places, and $\sqrt{2a}$ in the bow model.
 
 The reason for optimization 3. is that branches can severely slow down our code.
 Branches, such as if-statements, can cause our processor, which is doing branch prediction, to have to clear its pipeline, resulting in a delay of multiple clock cycles.
-One example of this with boundary conditions: a naive implementation could use if-statements to check if we are at the boundary, resulting in multiple branches for each point in our domain.
+One example of this is with boundary conditions: a naive implementation could use if-statements to check if we are at the boundary, resulting in multiple branches for each point in our domain.
 Instead, we can use a bit more memory and pre-compute the virtual points along the boundary, thus avoiding branches.
 
 Heap memory allocation and deallocation, e.g. malloc, new, or free, can take an indeterminate amount of time and should be avoided in critical code (optimization 4.).
@@ -679,13 +682,13 @@ One could also use vectorization which can greatly speed up the computation, but
 
 In this paper we have covered how to build a physical modeling sound synthesis algorithm for a specific instrument: the Yaybahar.
 
-After a brief review of finite difference schemes we went through each element of the instrument, a bowed string, springs, and drum membranes, discussed their physics, and showed to how implement numerical simulations of them using finite difference schemes.
+After a brief review of FDSs we went through each element of the instrument, a bowed string, springs, and drum membranes, discussed their physics, and showed to how implement numerical simulations of them using FDSs.
 
-The implementations was implemented as a C++ application structured in three layers: domains, that took care of low level details, models, which implemented the models of the elements, and application, which tied everything together in an interactive real-time fashion.
+The FDSs were implemented in a C++ application structured into three layers: domains, that took care of low level details, models, which implemented the models of the elements, and application, which tied everything together in an interactive real-time fashion.
 
-For the purpose of real-time synthesis we covered some of optimizations, most of them C++ specific, that was applied to the code.
+For the purpose of real-time synthesis we covered some of optimizations, most of them C++ specific, which were applied to the code.
 
-It is the hope of the author that this paper may inspire other people to pursue physical modeling of musical instruments using finite difference schemes in a way that will enrich the academic community and the world of sound and music in general.
+It is our hope that this paper may inspire other people to pursue physical modeling of musical instruments using FDSs in a way that will enrich the academic community and the world of sound and music in general.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %bibliography here
