@@ -280,7 +280,8 @@ $u_t$ is the velocity of $u$, and is a vector pointing in the direction that $u$
 Higher velocities will cause a stronger damping force which results in a exponential decrease in volume over time.
 
 The term $2 \sigma_1 u_{txx}$ causes frequency dependent damping of the string.
-This addition does not really have any physical justification, but causes the correct perceptual phenomena of higher frequencies dying out more quickly\cite{bensa_simulation_2003}.
+Intuitively we expect $u_{xx}$ to be larger when the string is vibrating at higher frequencies and thus cause a stronger damping.
+This addition does not have any direct physical justification, but causes the correct perceptual phenomena of higher frequencies dying out more quickly\cite{bensa_simulation_2003}.
 
 Proceeding with the discretization of Equation (\ref{eq:stiffNonlinearString}), we replace the derivative operators with suitable finite difference operators to get
 \begin{align}
@@ -289,7 +290,7 @@ Proceeding with the discretization of Equation (\ref{eq:stiffNonlinearString}), 
     &- 2 \sigma_0 \delta_{t\cdot} u^n_l + 2 \sigma_1 \delta_{t-} \delta_{xx}u^n_l + \frac{1}{\rho A} \sum_fJ_l(x_f)F_f,
   \end{split}
 \end{align}
-where $J_l(x_f)$ is a spreading operator distributing forces $F_f$ at position $x_f$ along the string (and scaling it by $1/h$) \cite[Chapter 5]{bilbao_numerical_2009}.
+where $J_l(x_f)$ is a spreading operator, the discrete counterpart of $\delta(x-x_f)$, scaling $F_f$ by $1/h$ whenever $x_f = hl$ and by $0$ otherwise \cite[Chapter 5]{bilbao_numerical_2009}.
 The new finite difference operators are defined as
 % at(l+2) - 4 * at(l+1) + 6 * at(l) - 4 * at(l-1) + at(l-2)
 \begin{align}
