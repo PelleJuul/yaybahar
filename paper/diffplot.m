@@ -3,8 +3,11 @@ d1 = zeros(1, length(x));
 d2 = zeros(1, length(x));
 d4 = zeros(1, length(x));
 h = 0.001;
+k = 1.0 / 44100;
 
-f = @(x) 10 * x^3 + 2*x^2;
+f = @(x) sin(pi * x)^2;
+% 2?2cos2(?x)?2?2sin2(?x
+% f2 = @(x) 2 * pi^2 * cos(pi * x)^2 - 2 * pi^2 * sin(pi * x)^2 ;
 f2 = @(x) (1 / h^2) * (f(x-h) - 2 * f(x) + f(x+h));
 f4 = @(x) (1 / h^2) * (f2(x-h) - 2 * f2(x) + f2(x+h)); 
 
@@ -14,20 +17,20 @@ for i = 1:length(x)
    d4(i) = 0.001 * f4(x(i));
 end
 
-set(0,'defaulttextinterpreter','latex')
-set(groot,'DefaultAxesTickLabelInterpreter','Tex');
+%set(0,'defaulttextinterpreter','latex')
+%set(groot,'DefaultAxesTickLabelInterpreter','Tex');
 
 plot(x, d1, 'k-', 'LineWidth', 1);
 grid on;
 hold on;
 plot(x, d2, 'k--', 'LineWidth', 1);
 plot(x, d4, 'k:', 'LineWidth', 1);
-legend('u', '10^{-2} u_{xx}', '10^{-3} u_{xxxx}', 'Location', 'southoutside', 'Orientation','horizontal');
+legend('u', '10^{-2} u_{xx}', '10^{-3} u_{xxxx}', 'Interpreter','latex', 'Location', 'southoutside', 'Orientation','horizontal');
 hold off;
 
-% set(gcf,'position',[0,0,400, 200])
-% set(gca,'color','white')
-% set(0,'DefaultAxesColor','none')
-% xlabel('x (position along string)', 'fontsize',16);
-% ylabel('y (displacement)', 'fontsize',16);
-% saveas(gcf, 'diffplot', 'epsc');
+set(gcf,'position',[0,0,400, 200])
+set(gca,'color','white')
+set(0,'DefaultAxesColor','none')
+xlabel('x (position along string)', 'fontsize',12);
+ylabel('y (displacement)', 'fontsize',12);
+saveas(gcf, 'diffplot', 'epsc');
