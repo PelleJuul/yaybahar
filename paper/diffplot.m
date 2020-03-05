@@ -27,6 +27,8 @@ plot(x, d2, 'k--', 'LineWidth', 1);
 plot(x, d4, 'k:', 'LineWidth', 1);
 l = legend('$u$', '$10^{-2} u_{xx}$', '$10^{-3} u_{xxxx}$', 'Interpreter', 'Latex', 'Location', 'southoutside', 'Orientation','horizontal');
 set(l, 'FontSize', 10);
+set(gca,'xticklabel',[]);
+set(gca,'yticklabel',[]);
 hold off;
 
 set(gcf,'position',[0,0,400, 200])
