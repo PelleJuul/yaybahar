@@ -13,4 +13,4 @@ set(gca,'color','white')
 set(0,'DefaultAxesColor','none')
 xlabel('$v_{rel}$', 'fontsize',12);
 ylabel('$\phi(v_{rel})$', 'fontsize',12);
-% saveas(gcf, 'bowplot', 'epsc'); 
+saveas(gcf, 'bowplot', 'epsc'); 
