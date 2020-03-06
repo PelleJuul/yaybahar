@@ -10,7 +10,7 @@ It consists of a string that is connected to two springs that connect to two dru
 membranes. This produces a distinctive reverbarant sound.
 
 The application should be quite easy to build on linux or macOS. If you do not
-wish to build the application a sound example, *example.mp3*, is provided.
+wish to build the application a sound example, [*example.mp3*](example.mp3), is provided.
 
 ## Building
 
@@ -55,4 +55,4 @@ You're welcome to create an issue on GitHub is you have issues running the code.
 ## License
 
 The Yaybahar application is free to use for educational purposes under the conditions
-specified in *license.md*. For commercial or other purposes please get in touch.
+specified in [*license.md*](license.md). For commercial or other purposes please get in touch.
