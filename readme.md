@@ -51,3 +51,8 @@ LIBS=-lsdl2 -lportaudio -lsndfile -lGL
 ```
 
 You're welcome to create an issue on GitHub is you have issues running the code.
+
+## License
+
+The Yaybahar application is free to use for educational purposes under the conditions
+specified in *license.md*. For commercial or other purposes please get in touch.
