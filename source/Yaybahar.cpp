@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <vector>
-#include <pal.h>
+#include "../pal/pal.h"
 #include "BowedString.h"
 #include "Spring.h"
 #include "Connection.h"

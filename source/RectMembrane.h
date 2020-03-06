@@ -14,7 +14,7 @@ struct RectMembrane
     float T = 40;       // Tension, N
     float sigma0 = 1.0; // Dampening, unitless
     float sigma1 = 1e-2;// Frequency dependent dampening, unitless
-    float nu = 0.25;    // Poisson's ratio, unitless
+    float nu = 0.41;    // Poisson's ratio, unitless
 
     // Derived membrane parameters
     float M;            // Mass, kg

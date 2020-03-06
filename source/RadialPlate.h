@@ -3,7 +3,7 @@
 // Pre-template:    65%
 
 #include "RadialDomain.h"
-#include <pal.h>
+#include "../pal/pal.h"
 
 #define sqr(x)   (x * x)
 

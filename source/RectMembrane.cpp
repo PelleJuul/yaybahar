@@ -1,6 +1,6 @@
 #include "RectMembrane.h"
 #include "Domain2d.h"
-#include <pal.h>
+#include "../pal/pal.h"
 
 RectMembrane::RectMembrane(int x, int y, float fs) :
     ua(x, y),

@@ -1,7 +1,7 @@
 #include "BowedString.h"
 #include "fds.h"
 #include <cmath>
-#include <pal.h>
+#include "../pal/pal.h"
 
 BowedString::BowedString(int L, float fs) :
     ua(L),

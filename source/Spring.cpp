@@ -1,5 +1,5 @@
 #include "Spring.h"
-#include <pal.h>
+#include "../pal/pal.h"
 #include "LineDomain.h"
 
 Spring::Spring(int L, float fs) :
