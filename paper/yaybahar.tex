@@ -119,11 +119,12 @@
 % Three addresses
 % --------------
   \threeauthors
-    {\firstauthor} {Aalborg University, Copenhagen \\ %
+    {\firstauthor} {Aalborg University Copenhagen \\ %
       {\tt \href{mailto:pjch17@student.aau.dk}{pjch17@student.aau.dk}}}
-    {\secondauthor} {Aalborg University, Copenhagen \\ %
+    {\secondauthor} {Multisensory Experience Lab, CREATE\\
+    Aalborg University Copenhagen \\%
       {\tt \href{mailto:sil@create.aau.dk}{sil@create.aau.dk}}}
-    {\thirdauthor} { Aalborg University, Copenhagen \\ %
+    {\thirdauthor} {Multisensory Experience Lab, CREATE\\ Aalborg University Copenhagen \\ %
       {\tt \href{mailto:sts@create.aau.dk}{sts@create.aau.dk}}}
 
 
@@ -138,6 +139,7 @@
 In this paper, finite difference schemes (FDSs) are adopted to model a specific instrument, the Yaybahar, invented by Turkish artist Görkem Şen.
 Each part of the instrument is simulated independently and its physical behavior is explained in an intuitive yet accurate manner. 
 The models are implemented in C++ to form an interactive, real-time application, whose architecture and optimization are discussed.
+Code and sound samples are available online.
 \end{abstract}
 %
 
@@ -345,7 +347,7 @@ Notice that $u_{xx}$ is somewhat opposite of $u$, meaning that the string will b
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{diffplot.eps}
   \label{fig:diffplot}
-  \caption{Plot of a part of string $u = u(x,t)$ (solid line) and its derivative $u_{xx}$ (dashed line), which determines the force due to tension and $u_{xxxx}$ (dotted line), which determines the force due to stiffness. $u_{xx}$ and $u_{xxxx}$ has been scaled for them to fit in the plot.}
+  \caption{Plot of a part of a string $u = u(x,t)$ (solid line) , its second derivative $u_{xx}$ (dashed line), which determines the force due to tension, and $u_{xxxx}$ (dotted line), which determines the force due to stiffness. $u_{xx}$ and $u_{xxxx}$ has been scaled for them to fit in the plot.}
 \end{figure}
 
 \noindent The multiplicative term $T_0 + \frac{E A}{2L} \int_0^L u_x^2 dx$ involves the tension $T_0$ and a higher tension will clearly result in a stronger restoring force.
@@ -710,7 +712,7 @@ For the spring the stability condition is exactly\cite{bilbao_modular_2009}
 \section{Implementation}
 \label{sec:implementation}
 
-The equations described in Section \ref{sec:elements} is implemented in C++ and the code is available on GitHub\footnote{\url{https://github.com/pellejuul/yaybahar}, latest commit at time of writing: 039bf85}.
+The equations described in Section \ref{sec:elements} is implemented in C++ and the code, as well as a sound sample, is available on GitHub\footnote{\url{https://github.com/pellejuul/yaybahar}}.
 This section covers how the code is structured and which optimizations were applied to make it run in real-time.
 
 \subsection{Code Structure}
