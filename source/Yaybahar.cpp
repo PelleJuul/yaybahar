@@ -31,6 +31,16 @@ int main(int argc, char **argv)
     Connection connectionSpring1Drum1(44100);
     Connection connectionSpring2Drum2(44100);
 
+    spring1.kappa = 15;
+    spring2.kappa = 15;
+    spring1.s0 = 0.5;
+    spring2.s0 = 0.5;
+
+    drum1.sigma0 = 0.5f;
+    drum2.sigma0 = 0.5f;
+    drum1.guiWavespeed = 200.0f;
+    drum2.guiWavespeed = 100.0f;
+
     float ab;
     float as1;
     float as2;
@@ -50,19 +60,19 @@ int main(int argc, char **argv)
         {
             // Compute all forces
             float forceStringSpring1 = connectionStringSpring1.calculateForce(
-                bowedString.at(3), spring1.at(0));
+                bowedString.get(3), spring1.get(0));
 
             float forceStringSpring2 = connectionStringSpring2.calculateForce(
-                bowedString.at(3), spring2.at(0));
+                bowedString.get(3), spring2.get(0));
 
             float forceSpring1Drum1 = connectionSpring1Drum1.calculateForce(
-                spring1.at(spring1.size() - 1),
-                drum1.u.at(4, 4)
+                spring1.get(spring1.size() - 1),
+                drum1.u.get(4, 4)
             );
 
             float forceSpring2Drum2 = connectionSpring2Drum2.calculateForce(
-                spring2.at(spring2.size() - 1),
-                drum2.u.at(4, 4)
+                spring2.get(spring2.size() - 1),
+                drum2.u.get(4, 4)
             );
 
             // Apply all forces
@@ -74,7 +84,7 @@ int main(int argc, char **argv)
             spring1.addForce(spring1.size() - 1, forceSpring1Drum1);
 
             spring2.addForce(0, -forceStringSpring2);
-            spring2.addForce(spring2.size() - 1, 10 * forceSpring2Drum2);
+            spring2.addForce(spring2.size() - 1, forceSpring2Drum2);
 
             drum1.addForce(4, 4, -forceSpring1Drum1);
             drum2.addForce(4, 4, -forceSpring2Drum2);
@@ -86,10 +96,10 @@ int main(int argc, char **argv)
             float s2 = spring2.computeNextSample(0);
 
             drum1.compute();
-            float d1 = drum1Gain * drum1.u.at(3, 4);
+            float d1 = drum1Gain * drum1.u.get(3, 4);
 
             drum2.compute();
-            float d2 = plate2Gain * drum2.u.at(3, 4);
+            float d2 = plate2Gain * drum2.u.get(3, 4);
 
             // Write output
 
@@ -122,16 +132,16 @@ int main(int argc, char **argv)
         spring2.drawGui();
         ImGui::End();
 
-        ImGui::Begin("Mixer");
-        ImGui::LabelText("CPU load", "%.2f", rt.getCpuLoad());
-        ImGui::SliderFloat("String", &stringAmp, -30, 3);
-        ImGui::SliderFloat("Spring 1", &springAmp1, -30, 3);
-        ImGui::SliderFloat("Spring 2", &springAmp2, -30, 3);
-        drum1Gain.draw();
-        plate2Gain.draw();
-        ImGui::SliderFloat("Master", &amp, -30, 3);
-        // ImGui::PlotLines("Scope", scope.data(), scope.size(), 0, "", -1, 1, ImVec2(0,80));
-        ImGui::End();
+        // ImGui::Begin("Mixer");
+        // ImGui::LabelText("CPU load", "%.2f", rt.getCpuLoad());
+        // ImGui::SliderFloat("String", &stringAmp, -30, 3);
+        // ImGui::SliderFloat("Spring 1", &springAmp1, -30, 3);
+        // ImGui::SliderFloat("Spring 2", &springAmp2, -30, 3);
+        // drum1Gain.draw();
+        // plate2Gain.draw();
+        // ImGui::SliderFloat("Master", &amp, -30, 3);
+        // // ImGui::PlotLines("Scope", scope.data(), scope.size(), 0, "", -1, 1, ImVec2(0,80));
+        // ImGui::End();
 
         ImGui::Begin("Drum 1");
         drum1.drawGui();

@@ -26,7 +26,7 @@ void Gui::show()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+    SDL_Window* window = SDL_CreateWindow("Yaybahar", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, gl_context);
     SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -82,12 +82,12 @@ void Gui::show()
 
         float time = SDL_GetTicks();
         float delta = time - previousTime;
-        float delay = 1000.0 / 24.0 - delta;
+        float delay = 1000.0 / 10.0 - delta;
         previousTime = time;
 
         if (delay > 0)
         {
-            SDL_Delay(1000.0 / 24.0 - delta);
+            SDL_Delay(1000.0 / 10.0 - delta);
         }
 
         // Start the Dear ImGui frame

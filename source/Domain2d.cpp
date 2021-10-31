@@ -61,22 +61,22 @@ float Domain2d::gradientf(int x, int y)
 
 float Domain2d::dxf(int x, int y)
 {
-    return cols * (at(x, y) - at(x + 1, y));
+    return cols * (get(x, y) - get(x + 1, y));
 }
 
 float Domain2d::dxx(int x, int y)
 {
-    return cols2 * (at(x - 1, y) - 2 * at(x, y) + at(x + 1, y));
+    return cols2 * (get(x - 1, y) - 2 * get(x, y) + get(x + 1, y));
 }
 
 float Domain2d::dyf(int x, int y)
 {
-    return rows * (at(x, y) - at(x, y + 1));
+    return rows * (get(x, y) - get(x, y + 1));
 }
     
 float Domain2d::dyy(int x, int y)
 {
-    return rows2 * (at(x, y - 1) - 2 * at(x, y) + at(x, y + 1));
+    return rows2 * (get(x, y - 1) - 2 * get(x, y) + get(x, y + 1));
 }
 
 float Domain2d::laplace(int x, int y)
@@ -88,6 +88,11 @@ float Domain2d::laplace(int x, int y)
 /// Assumes that we're not getting any values from the perimeter or the
 /// center.
 float &Domain2d::at(int x, int y)
+{
+    return data[cols * (y + 2) + (x + 2)];
+}
+
+float Domain2d::get(int x, int y) const
 {
     return data[cols * (y + 2) + (x + 2)];
 }

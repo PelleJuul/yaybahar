@@ -12,7 +12,7 @@ struct Spring
     // Spring parameters
     float kappa = 5.06;     // Stiffness, unitless
     float s0 = 1.0;         // Dampening, unitless
-    float s1 = 10e-8;       // Frequency dependent dampening, unitless
+    float s1 = 10e-6;       // Frequency dependent dampening, unitless
     float M = 0.1;          // Mass, kg  
 
     // Derived parameters
@@ -33,6 +33,7 @@ struct Spring
     Spring(int L, float fs);
 
     float &at(int l) { return u.at(l); };
+    inline float get(int l) const{ return u.get(l); };
     
     void addForce(int l, float input)
     {

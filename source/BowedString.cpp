@@ -62,7 +62,7 @@ float BowedString::getNextSample()
     g = 1 + 0.5 * alpha * sum;
 
     // Compute bowing point
-    int lb = L - 7;
+    int lb = int(L * 0.1732);
 
     // Update up to bowing point
 
@@ -76,17 +76,22 @@ float BowedString::getNextSample()
     float dxxlb = u.dxx(lb);
     float delta = 1000.0;
     sqrt2a = sqrt(2 * a);
+    float phi = 0;
 
     for (int i = 0; i < 50 && fabs(delta) > 10e-4; i++)
     {
-        f.at(lb) = -Fbm * theta(a, vrel);
-        float num = c2 * update(lb, Fbm, vrel, dxxlb) - c2 * up.at(lb) - vb - vrel;
-        float denom = c2 * pow2(k) * -Fbm * thetad(a, vrel) - 1;
+        float expVrel = expf(-a * pow2(vrel) + 0.5);
+        phi = sqrt2a * vrel * expVrel;
+        float phid = sqrt2a * (expVrel - 2 * a * pow2(vrel) * expVrel);
+
+        f.at(lb) = -Fbm * phi;
+        float num = c2 * update(lb, Fbm, vrel, dxxlb) - c2 * up.get(lb) - vb - vrel;
+        float denom = c2 * pow2(k) * -Fbm * phi - 1;
         delta = (num / denom);
         vrel = vrel - delta;
     }
 
-    f.at(lb) = -Fbm * theta(a, vrel);
+    f.at(lb) = -Fbm * phi;
     un.at(lb) = update(lb, Fb, vrel, dxxlb);
     dxxp.at(lb) = dxxlb;
 
@@ -110,12 +115,12 @@ float BowedString::getNextSample()
 void BowedString::drawGui()
 {
     ImGui::Begin("Bowed String");
-    ImGui::SliderFloat("wavespeed", &guiWavespeed, 1, 800);
-    ImGui::InputFloat("Young's modulus", &E, 1e4, 1e5, 0);
-    ImGui::SliderFloat("bow force", &Fb, 0, 100);
-    ImGui::LabelText("Fbm", "%.2f", Fbm);
-    ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
-    ImGui::SliderFloat("bow characteristic", &a, 0, 100);
+    ImGui::SliderFloat("Wavespeed", &guiWavespeed, 1, 800);
+    // ImGui::InputFloat("Young's modulus", &E, 1e4, 1e5, 0);
+    ImGui::SliderFloat("Bowing force", &Fb, 0, 100);
+    // ImGui::LabelText("Fbm", "%.2f", Fbm);
+    // ImGui::SliderFloat("bow velocity", &vb, -0.5, 0.5);
+    // ImGui::SliderFloat("bow characteristic", &a, 0, 100);
     // ImGui::PlotLines("String Displacement", u.data(), u.size(), 0, "", -1e-3, 1e-3, ImVec2(0,80));
     ImGui::End();
 
@@ -133,14 +138,14 @@ float BowedString::thetad(float a, float eta)
     return sqrt2a * (exp(-a * pow2(eta) + 0.5) - 2 * a * pow2(eta) * exp(-a * pow2(eta) + 0.5));
 }
 
-float BowedString::update(int l, float Fb, float vrel, float dxx)
+float BowedString::update(int l, float Fb, float vrel, float dxx) const
 {
     return c1 * (
           pow2(k) * omega2 * g * dxx
         - pow2(k) * kappa2 * u.dxxxx(l)
-        + sigma0 * k * up.at(l)
-        + 2 * sigma1 * k * (dxx - dxxp.at(l))
-        + 2 * u.at(l)
-        - up.at(l)
-        + pow2(k) * f.at(l));
+        + sigma0 * k * up.get(l)
+        + 2 * sigma1 * k * (dxx - dxxp.get(l))
+        + 2 * u.get(l)
+        - up.get(l)
+        + pow2(k) * f.get(l));
 }

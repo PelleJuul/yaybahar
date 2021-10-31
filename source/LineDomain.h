@@ -9,6 +9,8 @@ class LineDomain
 
     float &at(int l);
 
+    float get(int l) const;
+
     void clear();
 
     /// Compute the first order forwards difference.

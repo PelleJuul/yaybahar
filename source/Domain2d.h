@@ -32,6 +32,8 @@ struct Domain2d
 
     float &at(int x, int y);
 
+    float get(int x, int y) const;
+
     float &operator()(int x, int y)
     {
         return at(x, y);

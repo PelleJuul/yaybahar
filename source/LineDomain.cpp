@@ -12,6 +12,11 @@ float &LineDomain::at(int l)
     return v.at(l+2);
 }
 
+float LineDomain::get(int l) const
+{
+    return v[l+2];
+}
+
 void LineDomain::clear()
 {
     for (int i = 0; i < v.size(); i++)
@@ -22,40 +27,40 @@ void LineDomain::clear()
 
 float LineDomain::dxf(int l)
 {
-    return L * (at(l+1) - at(l));
+    return L * (get(l+1) - get(l));
 }
 
 float LineDomain::dxx(int l)
 {
-    return L2 * (at(l + 1) - 2 * at(l) + at(l - 1));
+    return L2 * (get(l + 1) - 2 * get(l) + get(l - 1));
 }
 
 float LineDomain::dxxxx(int l)
 {
-    return L2 * (at(l+2) - 4 * at(l+1) + 6 * at(l) - 4 * at(l-1) + at(l-2));
+    return L2 * (get(l+2) - 4 * get(l+1) + 6 * get(l) - 4 * get(l-1) + get(l-2));
 }
 
 void LineDomain::prepareClampedBoundaryLeft()
 {
-    at(-2) = at(0);
+    at(-2) = get(0);
     at(-1) = 0;
 }
 
 void LineDomain::prepareClampedBoundaryRight()
 {
     at(L) = 0;
-    at(L+1) = at(L-1);
+    at(L+1) = get(L-1);
 }
 
 void LineDomain::prepareFreeBoundaryLeft()
 {
-    at(-2) = 3 * at(0) - 2 * at(1);
-    at(-1) = 2 * at(0) - at(1);
+    at(-2) = 3 * get(0) - 2 * get(1);
+    at(-1) = 2 * get(0) - get(1);
 }
 
 void LineDomain::prepareFreeBoundaryRight()
 {
-    at(L) = 2 * at(L-1) - at(L-2);
-    at(L+1) = 3 * at(L-1) - 2 * at(L-2);
+    at(L) = 2 * get(L-1) - get(L-2);
+    at(L+1) = 3 * get(L-1) - 2 * get(L-2);
 }
 

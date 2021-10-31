@@ -40,11 +40,11 @@ float Spring::computeNextSample(float input)
         un.at(l) = c1 *
         (
             -kappa2 * k2 * u.dxxxx(l)
-            + k * s0 * up.at(l)
-            + 2 * k * s1 * (dxx - dxxp.at(l))
-            + 2 * u.at(l)
-            - up.at(l)
-            + k2 * f.at(l)
+            + k * s0 * up.get(l)
+            + 2 * k * s1 * (dxx - dxxp.get(l))
+            + 2 * u.get(l)
+            - up.get(l)
+            + k2 * f.get(l)
         );
 
         dxxp.at(l) = dxx;
@@ -63,8 +63,7 @@ float Spring::computeNextSample(float input)
 void Spring::drawGui()
 {
     ImGui::SliderFloat("Stiffness", &kappa, 0, 50.0);
-    ImGui::SliderFloat("Independet dampening", &s0, 0, 10);
-    ImGui::SliderFloat("Dependent dampening", &s1, 0, 10e-3);
+    // ImGui::SliderFloat("Independet dampening", &s0, 0, 10);
 
     if (ImGui::Button("Strike"))
     {

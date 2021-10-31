@@ -21,8 +21,8 @@ struct BowedString
     float p = 8000;     // Density, kg / m^3 (steel)
     float r = 0.001;    // Radius, m
     float T = 40;       // Tension, N
-    float sigma0 = 2.0; // Dampening, unitless
-    float sigma1 = 1e-2;// Frequency dependent dampening, unitless
+    float sigma0 = 0.8; // Dampening, unitless
+    float sigma1 = 1e-4;// Frequency dependent dampening, unitless
 
     // String derived parameters
     float A;            // Cross-sectional area, m^2
@@ -35,7 +35,7 @@ struct BowedString
     // Bow parameters
     float Fb = 0.0;     // Bow force, N
     float vb = 0.2;     // Bow speed, m/s
-    float a = 10;       // Bow characteristic, unitless
+    float a = 16;       // Bow characteristic, unitless
 
     // Bow derived parameters
     float Fbm = 0;      // Bow force scaled by mass, m / s^2
@@ -69,6 +69,7 @@ struct BowedString
 
     float getNextSample();
     float &at(int l) { return u.at(l); };
+    inline float get(int l) const { return u.get(l); };
     void drawGui();
 
     /// Compute the bow friction given the input parameters.
@@ -88,7 +89,7 @@ struct BowedString
     /// @param  l       The index of the point to compute for.
     /// @param  Fb      The bowing force for point l.
     /// @param  vrel    Relative bow velocity. Doesn't matter if `Fb` is zero.
-    float update(int l, float Fb, float vrel, float dxx);
+    float update(int l, float Fb, float vrel, float dxx) const;
 
     private:
     /// precomputed values for optimizations
